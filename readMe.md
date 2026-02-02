@@ -36,10 +36,6 @@ Icons & Fonts: Space Grotesk & Inter (via Google Fonts)
 
 Da die App vollständig clientseitig läuft, ist keine Installation erforderlich:
 
-Lade die Datei japan_travel_planner.html herunter.
-
-Öffne die Datei in einem modernen Webbrowser (Chrome, Firefox, Safari oder Edge).
-
 Hinweis: Eine aktive Internetverbindung ist erforderlich, um die Kartendaten und die Geocoding-Dienste zu laden.
 
 📖 Bedienungsanleitung
