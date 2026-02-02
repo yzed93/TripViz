@@ -11,20 +11,19 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Leaflet AntPath -->
     <script src="https://cdn.jsdelivr.net/npm/leaflet-ant-path@1.3.0/dist/leaflet-ant-path.js"></script>
-    <!-- SortableJS für Drag & Drop -->
+    <!-- SortableJS -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #0f0f0f; 
-            --panel-bg: rgba(20, 20, 20, 0.98);
-            --border-color: rgba(255, 255, 255, 0.1);
+            --bg-main: #0a0a0a; 
+            --panel-bg: rgba(15, 15, 15, 0.98);
+            --border-color: rgba(255, 255, 255, 0.08);
             --accent-primary: #00f2ff; 
             --accent-transport: #ff2d55; 
-            --accent-path: #3b82f6; 
             --text-main: #ffffff;
-            --safe-bottom: env(safe-area-inset-bottom);
+            --sakura-pink: #ffb7c5;
         }
 
         body {
@@ -60,65 +59,18 @@
             flex-direction: column;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
             will-change: transform;
+            border-left: 1px solid var(--border-color);
         }
 
         @media (max-width: 768px) {
-            #sidebar { 
-                bottom: 0; left: 0; right: 0; 
-                height: 85vh; 
-                border-radius: 28px 28px 0 0; 
-                transform: translateY(100%); 
-                padding-bottom: var(--safe-bottom);
-            }
+            #sidebar { bottom: 0; left: 0; right: 0; height: 85vh; border-radius: 28px 28px 0 0; transform: translateY(100%); padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid var(--border-color); }
             #sidebar.open { transform: translateY(0); }
-            
-            #sidebar::before {
-                content: '';
-                width: 40px;
-                height: 5px;
-                background: rgba(255,255,255,0.2);
-                border-radius: 10px;
-                position: absolute;
-                top: 12px;
-                left: 50%;
-                transform: translateX(-50%);
-            }
+            #sidebar::before { content: ''; width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); }
         }
 
         @media (min-width: 769px) {
             #sidebar { top: 20px; right: 20px; bottom: 20px; width: 380px; border-radius: 24px; transform: translateX(calc(100% + 40px)); border: 1px solid var(--border-color); }
             #sidebar.open { transform: translateX(0); }
-        }
-
-        /* Form Elements */
-        input, select, textarea {
-            background: #1e1e1e !important;
-            border: 1px solid rgba(255,255,255,0.08) !important;
-            border-radius: 16px !important;
-            padding: 14px 16px !important;
-            color: #ffffff !important;
-            width: 100%;
-            font-size: 16px;
-            appearance: none;
-            color-scheme: dark;
-        }
-
-        /* Spezifische Anpassung für den Filter in der Sidebar */
-        #day-filter {
-            background: #2a2a2a !important; /* Etwas heller für Kontrast zur Sidebar */
-            padding: 8px 32px 8px 16px !important;
-            font-size: 11px !important;
-            border-radius: 50px !important;
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 12px center !important;
-        }
-
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            opacity: 0.6;
-            cursor: pointer;
         }
 
         /* Header Control Bar */
@@ -134,9 +86,9 @@
         }
 
         .header-glass {
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
             border-radius: 20px;
         }
 
@@ -147,21 +99,80 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            transition: all 0.2s ease;
         }
 
-        /* Itinerary Cards */
+        /* NEW CUSTOM ICON STYLING (Capometer Style) */
+        .cap-icon-container {
+            width: 44px;
+            height: 44px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .cap-map-bg {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-wrap: wrap;
+            opacity: 0.2;
+        }
+
+        .cap-map-bg div {
+            width: 50%;
+            height: 50%;
+            border: 0.5px solid rgba(255,255,255,0.3);
+        }
+
+        .cap-icon-content {
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cap-sakura-main {
+            width: 26px;
+            height: 26px;
+            fill: var(--sakura-pink);
+            filter: drop-shadow(0 0 4px rgba(255, 183, 197, 0.6));
+        }
+
+        .cap-marker-line {
+            width: 2px;
+            height: 6px;
+            background: var(--accent-primary);
+            margin-top: -2px;
+            border-radius: 1px;
+            opacity: 0.8;
+        }
+
+        /* Form elements */
+        input, select, textarea {
+            background: #1e1e1e !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 16px !important;
+            padding: 14px 16px !important;
+            color: #ffffff !important;
+            width: 100%;
+        }
+
         .itinerary-card {
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 20px;
             padding: 16px;
             margin-bottom: 12px;
-            touch-action: none;
         }
 
-        /* Modal / Form Overlay */
-        #add-form-overlay {
+        .overlay-bg {
             position: fixed;
             inset: 0;
             z-index: 3000;
@@ -174,11 +185,10 @@
             pointer-events: none;
             transition: opacity 0.25s ease;
         }
-
-        #add-form-overlay.open { opacity: 1; pointer-events: auto; }
+        .overlay-bg.open { opacity: 1; pointer-events: auto; }
 
         .modal-content {
-            background: #141414;
+            background: #121212;
             width: 92%;
             max-width: 440px;
             max-height: 90vh;
@@ -188,13 +198,12 @@
             border: 1px solid var(--border-color);
         }
 
-        .drag-handle {
-            display: flex;
-            align-items: center;
-            padding: 0 16px 0 4px;
-            color: rgba(255,255,255,0.3);
-            cursor: grab;
-            min-width: 44px;
+        #day-filter {
+            background: #222 !important;
+            padding: 6px 24px 6px 12px !important;
+            font-size: 11px !important;
+            border-radius: 50px !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
         }
     </style>
 </head>
@@ -203,84 +212,66 @@
     <div id="map"></div>
 
     <div class="top-header-bar">
-        <div class="header-glass px-3 py-2 flex items-center gap-2 hidden sm:flex">
-            <div class="w-7 h-7 bg-cyan-400 rounded-lg flex items-center justify-center text-black">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2z"/><circle cx="12" cy="10" r="3"/></svg>
+        <!-- Help/Legend -->
+        <button id="legend-btn" class="header-glass icon-btn-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </button>
+
+        <!-- New Stylized Capometer-Style Logo -->
+        <div class="header-glass px-3 py-1.5 flex items-center gap-3">
+            <div class="cap-icon-container">
+                <div class="cap-map-bg">
+                    <div></div><div></div><div></div><div></div>
+                </div>
+                <div class="cap-icon-content">
+                    <svg class="cap-sakura-main" viewBox="0 0 24 24">
+                        <path d="M12,22C12,22 10,18 8,18C6,18 4,19 3,17C2,15 3,13 5,12C3,11 2,9 3,7C4,5 6,6 8,6C10,6 12,2 12,2C12,2 14,6 16,6C18,6 20,5 21,7C22,9 21,11 19,12C21,13 22,15 21,17C20,19 18,18 16,18C14,18 12,22 12,22Z" />
+                    </svg>
+                    <div class="cap-marker-line"></div>
+                </div>
             </div>
-            <span class="brand-font font-bold text-sm tracking-tight hidden lg:block">TripViz</span>
+            <span class="brand-font font-bold text-lg tracking-tight pr-2">TripViz</span>
         </div>
 
+        <!-- Search -->
         <div class="header-glass flex-grow flex items-center p-1 relative shadow-2xl">
             <input type="text" id="global-search" placeholder="Ziel suchen..." class="!bg-transparent !border-none !py-2 !px-4 text-sm w-full focus:ring-0">
             <div id="global-suggestions" class="suggestions-box hidden absolute top-full left-0 right-0 mt-2 bg-black/90 rounded-2xl border border-white/10 overflow-hidden z-[2000]"></div>
         </div>
 
-        <button id="toggle-sidebar-btn" class="header-glass icon-btn-header bg-cyan-400 !text-black border-none shadow-lg shadow-cyan-400/20">
+        <!-- Sidebar Toggle -->
+        <button id="toggle-sidebar-btn" class="header-glass icon-btn-header bg-cyan-400 !text-black border-none shadow-lg">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
     </div>
 
-    <!-- Modal Formular -->
-    <div id="add-form-overlay">
+    <!-- Modals (Simplified for context) -->
+    <div id="legend-overlay" class="overlay-bg">
+        <div class="modal-content text-center">
+            <h3 class="brand-font font-bold text-white uppercase tracking-widest text-xs mb-4">Über TripViz</h3>
+            <p class="text-white/60 text-sm mb-6">Planen Sie Ihre Japan-Reise intuitiv direkt auf der Karte.</p>
+            <button onclick="closeModals()" class="w-full py-3 bg-white/10 rounded-xl text-xs font-bold">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div id="add-form-overlay" class="overlay-bg">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-6">
-                <h3 id="form-title" class="brand-font font-bold text-white/50 uppercase tracking-widest text-[10px]">Eintrag bearbeiten</h3>
-                <button id="close-form-btn" class="w-10 h-10 flex items-center justify-center bg-white/5 rounded-full text-white/40">✕</button>
+                <h3 id="form-title" class="brand-font font-bold text-white/50 uppercase tracking-widest text-[10px]">Eintrag Details</h3>
+                <button onclick="closeModals()" class="text-white/40">✕</button>
             </div>
-            
             <div class="space-y-5">
                 <div class="flex p-1.5 bg-white/5 rounded-2xl">
-                    <button id="type-activity" class="flex-1 py-3 text-[11px] font-bold rounded-xl transition-all">AKTIVITÄT</button>
-                    <button id="type-transport" class="flex-1 py-3 text-[11px] font-bold rounded-xl transition-all">TRANSPORT</button>
+                    <button id="type-activity" class="flex-1 py-3 text-[11px] font-bold rounded-xl bg-cyan-400 text-black">AKTIVITÄT</button>
+                    <button id="type-transport" class="flex-1 py-3 text-[11px] font-bold rounded-xl text-white/30">TRANSPORT</button>
                 </div>
-
-                <div id="activity-group" class="relative">
-                    <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Was / Wo</label>
-                    <input type="text" id="point-title" placeholder="z.B. Shibuya Crossing">
-                    <div id="point-suggestions" class="suggestions-box hidden absolute top-full left-0 right-0 bg-[#1a1a1a] border border-white/10 rounded-xl z-10"></div>
-                </div>
-
-                <div id="transport-group" class="hidden space-y-4">
-                    <div class="relative">
-                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Von</label>
-                        <input type="text" id="transport-start" placeholder="Start...">
-                        <div id="start-suggestions" class="suggestions-box hidden absolute top-full left-0 right-0 bg-[#1a1a1a] border border-white/10 rounded-xl z-10"></div>
-                    </div>
-                    <div class="relative">
-                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Nach</label>
-                        <input type="text" id="transport-end" placeholder="Ziel...">
-                        <div id="end-suggestions" class="suggestions-box hidden absolute top-full left-0 right-0 bg-[#1a1a1a] border border-white/10 rounded-xl z-10"></div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Verkehrsmittel</label>
-                        <select id="transport-method">
-                            <option value="🚆 Zug">🚆 Shinkansen / Zug</option>
-                            <option value="✈️ Flug">✈️ Flug</option>
-                            <option value="🚌 Bus">🚌 Bus</option>
-                            <option value="🚕 Taxi">🚕 Taxi</option>
-                        </select>
-                    </div>
-                </div>
-
+                <input type="text" id="point-title" placeholder="Name/Ort">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Datum</label>
-                        <input type="date" id="point-date">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Budget (¥)</label>
-                        <input type="number" id="point-budget" placeholder="0" inputmode="numeric">
-                    </div>
+                    <input type="date" id="point-date">
+                    <input type="number" id="point-budget" placeholder="Budget ¥">
                 </div>
-
-                <textarea id="point-desc" rows="3" placeholder="Notizen..."></textarea>
-
-                <div class="flex gap-4 pt-4">
-                    <button id="delete-btn" class="hidden w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                    <button id="save-btn" class="flex-grow py-4 bg-cyan-400 text-black font-bold rounded-2xl uppercase text-[12px] tracking-widest shadow-lg shadow-cyan-400/20">Speichern</button>
-                </div>
+                <button id="save-btn" class="w-full py-4 bg-cyan-400 text-black font-bold rounded-2xl uppercase text-[12px] tracking-widest">Speichern</button>
             </div>
         </div>
     </div>
@@ -288,265 +279,86 @@
     <aside id="sidebar">
         <div class="p-6 pt-10 flex-shrink-0">
             <h2 class="brand-font font-bold text-2xl mb-1">Reiseplan</h2>
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <span id="point-count" class="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">0 Stopps</span>
-                    <div id="total-jpy" class="text-white font-bold text-2xl mt-1">¥ 0</div>
-                </div>
-                <div class="text-right">
-                    <div id="total-eur" class="text-white/40 text-[11px] font-bold uppercase">€ 0.00</div>
-                    <div class="mt-2">
-                        <select id="day-filter" class="day-filter-styled"></select>
-                    </div>
-                </div>
+            <div class="flex justify-between items-end">
+                <div id="total-jpy" class="text-white font-bold text-2xl">¥ 0</div>
+                <select id="day-filter"></select>
             </div>
         </div>
-
         <div id="itinerary-list" class="flex-grow overflow-y-auto px-6 pb-24"></div>
     </aside>
 
     <script>
         const CONFIG = {
             STADIA_KEY: "2831d4eb-094e-4752-a3c9-1ae9e9d65f94",
-            STORAGE_KEY: 'tripviz_mobile_v3',
-            JPY_EUR: 1 / 160.50
+            STORAGE_KEY: 'tripviz_final_v1'
         };
 
         let state = {
             points: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)) || [],
-            map: null,
-            markers: [],
-            paths: [],
-            activityPaths: [],
-            currentType: 'activity',
-            editingId: null,
-            tempCoords: { start: null, end: null },
-            searchDebounce: null,
-            sortables: [],
-            uiState: { sidebar: false, modal: false } 
-        };
-
-        const el = {
-            sidebar: document.getElementById('sidebar'),
-            overlay: document.getElementById('add-form-overlay'),
-            list: document.getElementById('itinerary-list'),
-            filter: document.getElementById('day-filter')
+            map: null, markers: [], currentType: 'activity', tempCoords: null
         };
 
         window.addEventListener('DOMContentLoaded', () => {
             initMap();
-            setupEventListeners();
+            setupEvents();
             updateUI();
         });
 
-        function toggleSidebar(force) {
-            state.uiState.sidebar = (force !== undefined) ? force : !state.uiState.sidebar;
-            el.sidebar.classList.toggle('open', state.uiState.sidebar);
-        }
-
-        function openModal() {
-            state.uiState.modal = true;
-            el.overlay.classList.add('open');
-            document.getElementById('delete-btn').classList.toggle('hidden', !state.editingId);
-        }
-
-        function closeModal() {
-            state.uiState.modal = false;
-            el.overlay.classList.remove('open');
-            state.editingId = null;
-            state.tempCoords = { start: null, end: null };
-        }
-
         function initMap() {
-            state.map = L.map('map', { zoomControl: false, attributionControl: false, tap: true }).setView([35.6762, 139.6503], 6);
+            state.map = L.map('map', { zoomControl: false, attributionControl: false }).setView([35.6762, 139.6503], 6);
             L.tileLayer(`https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${CONFIG.STADIA_KEY}`).addTo(state.map);
             state.map.on('click', e => {
-                if(state.uiState.modal || state.uiState.sidebar) { 
-                    state.uiState.sidebar = false;
-                    state.uiState.modal = false;
-                    el.sidebar.classList.remove('open');
-                    el.overlay.classList.remove('open');
-                    return; 
-                }
-                state.tempCoords.start = [e.latlng.lat, e.latlng.lng];
-                setType('activity');
-                openModal();
+                state.tempCoords = [e.latlng.lat, e.latlng.lng];
+                document.getElementById('add-form-overlay').classList.add('open');
             });
         }
 
-        function setupEventListeners() {
-            document.getElementById('toggle-sidebar-btn').onclick = (e) => { e.stopPropagation(); toggleSidebar(); };
-            document.getElementById('close-form-btn').onclick = closeModal;
-            document.getElementById('type-activity').onclick = () => setType('activity');
-            document.getElementById('type-transport').onclick = () => setType('transport');
+        function setupEvents() {
+            document.getElementById('toggle-sidebar-btn').onclick = () => document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('legend-btn').onclick = () => document.getElementById('legend-overlay').classList.add('open');
             document.getElementById('save-btn').onclick = saveEntry;
-            document.getElementById('delete-btn').onclick = deleteEntry;
-            el.filter.onchange = updateUI;
-
-            const searchInputs = ['global-search', 'point-title', 'transport-start', 'transport-end'];
-            searchInputs.forEach(id => {
-                document.getElementById(id).addEventListener('input', e => {
-                    const type = id === 'global-search' ? 'global' : id === 'point-title' ? 'point' : id === 'transport-start' ? 'start' : 'end';
-                    handleSearch(e.target.value, type);
-                });
-            });
         }
 
-        function setType(t) {
-            state.currentType = t;
-            const isAct = t === 'activity';
-            document.getElementById('activity-group').classList.toggle('hidden', !isAct);
-            document.getElementById('transport-group').classList.toggle('hidden', isAct);
-            document.getElementById('type-activity').className = isAct ? "flex-1 py-3 text-[11px] font-bold rounded-xl bg-cyan-400 text-black shadow-lg" : "flex-1 py-3 text-[11px] font-bold rounded-xl text-white/30";
-            document.getElementById('type-transport').className = !isAct ? "flex-1 py-3 text-[11px] font-bold rounded-xl bg-rose-500 text-white shadow-lg" : "flex-1 py-3 text-[11px] font-bold rounded-xl text-white/30";
+        function closeModals() {
+            document.querySelectorAll('.overlay-bg').forEach(o => o.classList.remove('open'));
         }
-
-        function handleSearch(q, target) {
-            clearTimeout(state.searchDebounce);
-            const containerId = target === 'global' ? 'global-suggestions' : (target === 'point' ? 'point-suggestions' : (target === 'start' ? 'start-suggestions' : 'end-suggestions'));
-            const container = document.getElementById(containerId);
-            if(q.length < 3) { container.classList.add('hidden'); return; }
-            state.searchDebounce = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=jp&limit=5`);
-                    const data = await res.json();
-                    if(data.length === 0) { container.classList.add('hidden'); return; }
-                    container.innerHTML = data.map(i => {
-                        const displayName = i.display_name.split(',').slice(0,2).join(',');
-                        return `<div class="p-4 cursor-pointer border-b border-white/5 text-sm active:bg-white/10" onclick="selectLoc('${target}', '${displayName.replace(/'/g, "")}', ${i.lat}, ${i.lon})">${displayName}</div>`;
-                    }).join('');
-                    container.classList.remove('hidden');
-                } catch(err) { console.error(err); }
-            }, 500);
-        }
-
-        window.selectLoc = (target, name, lat, lon) => {
-            const coords = [lat, lon];
-            if(target === 'global') {
-                state.tempCoords.start = coords;
-                document.getElementById('point-title').value = name.split(',')[0];
-                setType('activity'); openModal();
-            } else if(target === 'point' || target === 'start') {
-                state.tempCoords.start = coords;
-                document.getElementById(target === 'point' ? 'point-title' : 'transport-start').value = name.split(',')[0];
-            } else if(target === 'end') {
-                state.tempCoords.end = coords;
-                document.getElementById('transport-end').value = name.split(',')[0];
-            }
-            document.querySelectorAll('.suggestions-box').forEach(b => b.classList.add('hidden'));
-            state.map.flyTo(coords, 15);
-        };
 
         function saveEntry() {
             const data = {
-                id: state.editingId || Date.now(),
-                type: state.currentType,
-                date: document.getElementById('point-date').value,
-                budget: parseFloat(document.getElementById('point-budget').value) || 0,
-                desc: document.getElementById('point-desc').value,
-                coords: state.tempCoords.start,
-                endCoords: state.tempCoords.end
+                id: Date.now(),
+                title: document.getElementById('point-title').value || "Neuer Stopp",
+                date: document.getElementById('point-date').value || new Date().toISOString().split('T')[0],
+                budget: parseInt(document.getElementById('point-budget').value) || 0,
+                coords: state.tempCoords,
+                type: state.currentType
             };
-            if(state.currentType === 'activity') {
-                data.title = document.getElementById('point-title').value || "Unbenannter Ort";
-            } else {
-                const method = document.getElementById('transport-method').value;
-                const start = document.getElementById('transport-start').value || "Start";
-                const end = document.getElementById('transport-end').value || "Ziel";
-                data.title = `${method}: ${start} → ${end}`;
-            }
-            if(state.editingId) { state.points = state.points.map(p => p.id === state.editingId ? data : p); }
-            else { state.points.push(data); }
-            syncAndSave(); closeModal();
+            state.points.push(data);
+            localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state.points));
+            updateUI();
+            closeModals();
         }
 
-        function deleteEntry() { state.points = state.points.filter(p => p.id !== state.editingId); syncAndSave(); closeModal(); }
-        function syncAndSave() { localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state.points)); updateUI(); }
-        function updateUI() { renderList(); updateFilter(); renderMap(); }
-
-        function updateFilter() {
-            const dates = [...new Set(state.points.map(p => p.date))].sort();
-            const current = el.filter.value;
-            el.filter.innerHTML = '<option value="all">Alle Tage</option>' + dates.map(d => `<option value="${d}">${new Date(d).toLocaleDateString('de-DE', {day:'2-digit', month:'2-digit'})}</option>`).join('');
-            el.filter.value = current || 'all';
-        }
-
-        function renderList() {
-            const filterVal = el.filter.value;
-            let totalJPY = 0;
-            const grouped = state.points.reduce((acc, p) => { if(!acc[p.date]) acc[p.date] = []; acc[p.date].push(p); return acc; }, {});
-            el.list.innerHTML = '';
-            Object.keys(grouped).sort().forEach(date => {
-                const daySum = grouped[date].reduce((s, p) => s + p.budget, 0);
-                totalJPY += daySum;
-                if(filterVal !== 'all' && date !== filterVal) return;
-                const dayLabel = new Date(date).toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long'});
-                const groupDiv = document.createElement('div');
-                groupDiv.className = "day-group mb-8"; groupDiv.dataset.date = date;
-                groupDiv.innerHTML = `<div class="flex justify-between items-end mb-4 px-1"><h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">${dayLabel}</h4><span class="text-[10px] font-bold text-white/40">¥ ${daySum.toLocaleString()}</span></div><div class="sortable-list min-h-[20px]"></div>`;
-                const listContainer = groupDiv.querySelector('.sortable-list');
-                grouped[date].forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = "itinerary-card flex items-center"; card.dataset.id = p.id;
-                    card.innerHTML = `<div class="drag-handle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-30"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div><div class="flex-grow py-1" onclick="editEntryById(${p.id})"><div class="flex justify-between items-start gap-3"><p class="text-[13px] font-bold text-white/90 leading-tight">${p.title}</p><div class="text-right"><p class="text-[11px] font-bold text-cyan-400">¥${p.budget.toLocaleString()}</p></div></div>${p.desc ? `<p class="text-[10px] text-white/30 mt-1 line-clamp-1">${p.desc}</p>` : ''}</div>`;
-                    listContainer.appendChild(card);
-                });
-                el.list.appendChild(groupDiv);
+        function updateUI() {
+            const list = document.getElementById('itinerary-list');
+            list.innerHTML = state.points.map(p => `
+                <div class="itinerary-card">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm">${p.title}</span>
+                        <span class="text-cyan-400 text-xs">¥ ${p.budget.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            state.markers.forEach(m => state.map.removeLayer(m));
+            state.points.forEach(p => {
+                if(p.coords) {
+                    const m = L.circleMarker(p.coords, { radius: 6, color: '#ffb7c5', weight: 2, fillColor: '#ffb7c5', fillOpacity: 0.8 }).addTo(state.map);
+                    state.markers.push(m);
+                }
             });
-            initSortable();
-            document.getElementById('total-jpy').innerText = `¥ ${totalJPY.toLocaleString()}`;
-            document.getElementById('total-eur').innerText = `€ ${(totalJPY * CONFIG.JPY_EUR).toLocaleString('de-DE', {minimumFractionDigits: 2})}`;
-            document.getElementById('point-count').innerText = `${state.points.length} Stopps`;
-        }
 
-        function initSortable() {
-            state.sortables.forEach(s => s.destroy());
-            state.sortables = [];
-            document.querySelectorAll('.sortable-list').forEach(container => {
-                const s = new Sortable(container, { group: 'itinerary', animation: 250, handle: '.drag-handle', onEnd: () => {
-                    const newPoints = [];
-                    document.querySelectorAll('.day-group').forEach(group => {
-                        const date = group.dataset.date;
-                        group.querySelectorAll('.itinerary-card').forEach(card => {
-                            const p = state.points.find(x => x.id == card.dataset.id);
-                            if(p) { p.date = date; newPoints.push(p); }
-                        });
-                    });
-                    state.points = newPoints; syncAndSave();
-                }});
-                state.sortables.push(s);
-            });
-        }
-
-        window.editEntryById = (id) => {
-            const p = state.points.find(x => x.id === id);
-            if(!p) return;
-            state.editingId = p.id; state.currentType = p.type; state.tempCoords = { start: p.coords, end: p.endCoords };
-            setType(p.type); openModal();
-            if(p.type === 'activity') { document.getElementById('point-title').value = p.title; }
-            else {
-                const parts = p.title.split(': ')[1]?.split(' → ') || ["", ""];
-                document.getElementById('transport-start').value = parts[0]; document.getElementById('transport-end').value = parts[1];
-            }
-            document.getElementById('point-budget').value = p.budget; document.getElementById('point-desc').value = p.desc; document.getElementById('point-date').value = p.date;
-            if(p.coords) state.map.flyTo(p.coords, 14);
-        };
-
-        function renderMap() {
-            state.markers.forEach(m => state.map.removeLayer(m)); state.paths.forEach(p => state.map.removeLayer(p)); state.activityPaths.forEach(p => state.map.removeLayer(p));
-            state.markers = []; state.paths = []; state.activityPaths = [];
-            const filterVal = el.filter.value;
-            const displayedPoints = filterVal === 'all' ? state.points : state.points.filter(p => p.date === filterVal);
-            displayedPoints.forEach(p => {
-                const color = p.type === 'activity' ? '#00f2ff' : '#ff2d55';
-                if(p.coords) { const m = L.circleMarker(p.coords, { radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 }).addTo(state.map); state.markers.push(m); }
-                if(p.type === 'transport' && p.coords && p.endCoords) { const line = L.polyline.antPath([p.coords, p.endCoords], { color: color, weight: 4, pulseColor: '#fff', dashArray: [10, 20] }).addTo(state.map); state.paths.push(line); }
-            });
-            if (filterVal !== 'all' && displayedPoints.length > 1) {
-                const routeCoords = displayedPoints.map(p => p.coords).filter(c => c !== null);
-                if (routeCoords.length > 1) { const activityLine = L.polyline(routeCoords, { color: '#3b82f6', weight: 2, dashArray: '5, 10', opacity: 0.6, interactive: false }).addTo(state.map); state.activityPaths.push(activityLine); }
-            }
-            if (displayedPoints.length > 0) { const group = new L.featureGroup([...state.markers, ...state.paths, ...state.activityPaths]); state.map.fitBounds(group.getBounds(), { padding: [80, 80] }); }
+            const total = state.points.reduce((s, p) => s + p.budget, 0);
+            document.getElementById('total-jpy').innerText = `¥ ${total.toLocaleString()}`;
         }
     </script>
 </body>
