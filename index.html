@@ -16,15 +16,242 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <style>
+        /* Default Theme: Cyberpunk Dark */
         :root {
             --bg-main: #0f0f0f; 
             --panel-bg: rgba(20, 20, 20, 0.98);
             --border-color: rgba(255, 255, 255, 0.1);
             --accent-primary: #00f2ff; 
+            --accent-secondary: #00ccff;
             --accent-transport: #ff2d55; 
             --accent-path: #3b82f6; 
             --text-main: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-on-accent: #0a0a0a; /* Text color on accent backgrounds */
+            --gradient-primary: linear-gradient(135deg, #00f2ff 0%, #0099ff 100%);
+            --gradient-card: linear-gradient(135deg, rgba(0,242,255,0.05) 0%, rgba(0,153,255,0.05) 100%);
             --safe-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Theme: Sakura (Cherry Blossom) */
+        .theme-sakura {
+            --bg-main: #1a0f14;
+            --panel-bg: rgba(26, 15, 20, 0.98);
+            --border-color: rgba(255, 183, 197, 0.2);
+            --accent-primary: #ffb7c5;
+            --accent-secondary: #ffd1dc;
+            --accent-transport: #ff69b4;
+            --accent-path: #db7093;
+            --text-main: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-on-accent: #1a0515;
+            --gradient-primary: linear-gradient(135deg, #ffb7c5 0%, #ff69b4 100%);
+            --gradient-card: linear-gradient(135deg, rgba(255,183,197,0.05) 0%, rgba(255,105,180,0.05) 100%);
+        }
+
+        /* Theme: Zen Garden */
+        .theme-zen {
+            --bg-main: #0a0e0d;
+            --panel-bg: rgba(15, 20, 18, 0.98);
+            --border-color: rgba(134, 239, 172, 0.2);
+            --accent-primary: #86efac;
+            --accent-secondary: #4ade80;
+            --accent-transport: #34d399;
+            --accent-path: #10b981;
+            --text-main: #f0fdf4;
+            --text-secondary: rgba(240, 253, 244, 0.7);
+            --text-on-accent: #0a1f0f;
+            --gradient-primary: linear-gradient(135deg, #86efac 0%, #34d399 100%);
+            --gradient-card: linear-gradient(135deg, rgba(134,239,172,0.05) 0%, rgba(52,211,153,0.05) 100%);
+        }
+
+        /* Theme: Tokyo Neon (PRO) */
+        .theme-neon {
+            --bg-main: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.98);
+            --border-color: rgba(255, 0, 255, 0.3);
+            --accent-primary: #ff00ff;
+            --accent-secondary: #00ffff;
+            --accent-transport: #ffff00;
+            --accent-path: #ff1493;
+            --text-main: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-on-accent: #0a0a0a;
+            --gradient-primary: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);
+            --gradient-card: linear-gradient(135deg, rgba(255,0,255,0.1) 0%, rgba(0,255,255,0.1) 100%);
+        }
+
+        /* Theme: Fuji Sunset (PRO) */
+        .theme-fuji {
+            --bg-main: #1a0a0f;
+            --panel-bg: rgba(26, 10, 15, 0.98);
+            --border-color: rgba(251, 146, 60, 0.2);
+            --accent-primary: #fb923c;
+            --accent-secondary: #f97316;
+            --accent-transport: #dc2626;
+            --accent-path: #f59e0b;
+            --text-main: #fef3c7;
+            --text-secondary: rgba(254, 243, 199, 0.7);
+            --text-on-accent: #1a0a05;
+            --gradient-primary: linear-gradient(135deg, #fb923c 0%, #dc2626 100%);
+            --gradient-card: linear-gradient(135deg, rgba(251,146,60,0.05) 0%, rgba(220,38,38,0.05) 100%);
+        }
+
+        /* Theme: Ocean Blue */
+        .theme-ocean {
+            --bg-main: #020617;
+            --panel-bg: rgba(2, 6, 23, 0.98);
+            --border-color: rgba(59, 130, 246, 0.2);
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --accent-transport: #2563eb;
+            --accent-path: #0ea5e9;
+            --text-main: #f0f9ff;
+            --text-secondary: rgba(240, 249, 255, 0.7);
+            --text-on-accent: #020817;
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
+            --gradient-card: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(14,165,233,0.05) 100%);
+        }
+
+        /* Theme: Matcha */
+        .theme-matcha {
+            --bg-main: #0d1410;
+            --panel-bg: rgba(13, 20, 16, 0.98);
+            --border-color: rgba(132, 204, 22, 0.2);
+            --accent-primary: #84cc16;
+            --accent-secondary: #65a30d;
+            --accent-transport: #a3e635;
+            --accent-path: #4d7c0f;
+            --text-main: #fefce8;
+            --text-secondary: rgba(254, 252, 232, 0.7);
+            --text-on-accent: #0f1a0a;
+            --gradient-primary: linear-gradient(135deg, #84cc16 0%, #65a30d 100%);
+            --gradient-card: linear-gradient(135deg, rgba(132,204,22,0.05) 0%, rgba(101,163,13,0.05) 100%);
+        }
+
+        /* Theme: Midnight Purple (PRO) */
+        .theme-midnight {
+            --bg-main: #0f0514;
+            --panel-bg: rgba(15, 5, 20, 0.98);
+            --border-color: rgba(168, 85, 247, 0.2);
+            --accent-primary: #a855f7;
+            --accent-secondary: #c084fc;
+            --accent-transport: #e879f9;
+            --accent-path: #8b5cf6;
+            --text-main: #faf5ff;
+            --text-secondary: rgba(250, 245, 255, 0.7);
+            --text-on-accent: #1a0a20;
+            --gradient-primary: linear-gradient(135deg, #a855f7 0%, #e879f9 100%);
+            --gradient-card: linear-gradient(135deg, rgba(168,85,247,0.05) 0%, rgba(232,121,249,0.05) 100%);
+        }
+
+        /* Neon Glow Effect for Tokyo Neon Theme */
+        .theme-neon button:hover,
+        .theme-neon .btn:hover {
+            box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+        }
+
+        /* Dynamic color classes using CSS variables */
+        .bg-accent-primary {
+            background-color: var(--accent-primary) !important;
+        }
+        
+        .text-accent-primary {
+            color: var(--accent-primary) !important;
+        }
+        
+        .border-accent-primary {
+            border-color: var(--accent-primary) !important;
+        }
+        
+        .shadow-accent-primary {
+            box-shadow: 0 10px 15px -3px rgba(0, 242, 255, 0.1), 
+                        0 4px 6px -2px rgba(0, 242, 255, 0.05) !important;
+        }
+
+        /* Override Tailwind hardcoded colors */
+        .bg-cyan-400,
+        .hover\:bg-cyan-500:hover {
+            background-color: var(--accent-primary) !important;
+        }
+
+        .text-cyan-400 {
+            color: var(--accent-primary) !important;
+        }
+
+        .border-cyan-400 {
+            border-color: var(--accent-primary) !important;
+        }
+
+        .shadow-cyan-400\/20 {
+            box-shadow: 0 10px 15px -3px var(--accent-primary), 
+                        0 4px 6px -2px var(--accent-primary) !important;
+            opacity: 0.2;
+        }
+
+        /* Fix save button and primary buttons */
+        #save-btn,
+        .btn-primary {
+            background: var(--accent-primary) !important;
+            color: var(--text-on-accent) !important;
+            opacity: 1 !important;
+            font-weight: 700 !important;
+            border: none !important;
+        }
+
+        #save-btn:hover,
+        .btn-primary:hover {
+            background: var(--accent-secondary) !important;
+            color: var(--text-on-accent) !important;
+            opacity: 1 !important;
+            filter: brightness(1.1);
+        }
+
+        /* Fix toggle sidebar button */
+        #toggle-sidebar-btn {
+            background: var(--accent-primary) !important;
+            color: var(--text-on-accent) !important;
+            opacity: 1 !important;
+            border: none !important;
+        }
+
+        #toggle-sidebar-btn svg {
+            stroke: var(--text-on-accent) !important;
+        }
+
+        /* Fix icon colors in header */
+        .icon-btn-header.bg-cyan-400 {
+            background: var(--accent-primary) !important;
+        }
+
+        /* Fix active type buttons */
+        #type-activity.active,
+        #type-transport.active {
+            background-color: var(--accent-primary) !important;
+            color: #000 !important;
+        }
+
+        /* Fix day filter */
+        .day-filter-styled {
+            border-color: var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+        /* Make sure inputs use theme colors */
+        input, textarea, select {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid var(--border-color) !important;
+            color: var(--text-main) !important;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent-primary) !important;
+            outline: none !important;
+        }
+
+        /* Fix logo icon */
+        .header-glass .w-7.h-7.bg-cyan-400 {
+            background: var(--accent-primary) !important;
         }
 
         body {
@@ -304,6 +531,15 @@
 
         <div id="itinerary-list" class="flex-grow overflow-y-auto px-6 pb-24"></div>
         
+        <!-- Theme Switcher -->
+        <div class="px-6 pb-4 border-t border-white/5 pt-4">
+            <button onclick="toggleThemeSelector()" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white/70 text-xs font-bold rounded-xl border border-white/10 transition-all active:scale-95 flex items-center justify-center gap-2">
+                <span>🎨</span>
+                <span>Farbschema</span>
+                <span id="current-theme-name" class="text-cyan-400">Cyberpunk</span>
+            </button>
+        </div>
+        
         <!-- Export/Import Controls -->
         <div class="px-6 pb-6 border-t border-white/5 pt-4">
             <div class="flex gap-2 mb-3">
@@ -315,8 +551,147 @@
                     <input type="file" accept=".json" onchange="importData(this.files[0]); this.value='';" class="hidden">
                 </label>
             </div>
+            <button onclick="showTripStats()" class="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white/70 text-xs font-bold rounded-xl border border-white/10 transition-all active:scale-95">
+                📊 Statistiken
+            </button>
         </div>
     </aside>
+
+    <!-- Theme Selector Modal -->
+    <div id="theme-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: var(--panel-bg); border-radius: 24px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 32px; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 class="brand-font" style="font-size: 24px; font-weight: 700;">🎨 Farbschema wählen</h2>
+                <button onclick="closeThemeSelector()" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border: none; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px;">
+                <!-- Cyberpunk Dark -->
+                <button class="theme-option active" data-theme="cyberpunk" data-name="Cyberpunk" onclick="switchTheme('cyberpunk', 'Cyberpunk')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #00f2ff; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #ff2d55; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #3b82f6; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 4px;">Cyberpunk Dark</div>
+                    <div style="display: inline-block; font-size: 10px; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 6px; margin-top: 4px;">Standard</div>
+                </button>
+
+                <!-- Sakura -->
+                <button class="theme-option" data-theme="sakura" data-name="Sakura" onclick="switchTheme('sakura', 'Sakura')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #ffb7c5; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #ff69b4; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #db7093; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center;">Sakura 🌸</div>
+                </button>
+
+                <!-- Zen Garden -->
+                <button class="theme-option" data-theme="zen" data-name="Zen Garden" onclick="switchTheme('zen', 'Zen Garden')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #86efac; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #34d399; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #10b981; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center;">Zen Garden 🍃</div>
+                </button>
+
+                <!-- Tokyo Neon (PRO) -->
+                <button class="theme-option pro-theme" data-theme="neon" data-name="Tokyo Neon" onclick="switchTheme('neon', 'Tokyo Neon')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #ff00ff; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #00ffff; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #ffff00; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 4px;">Tokyo Neon 🌃</div>
+                    <div style="display: inline-block; font-size: 10px; padding: 2px 8px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; font-weight: 700; border-radius: 6px;">PRO</div>
+                </button>
+
+                <!-- Fuji Sunset (PRO) -->
+                <button class="theme-option pro-theme" data-theme="fuji" data-name="Fuji Sunset" onclick="switchTheme('fuji', 'Fuji Sunset')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #fb923c; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #f97316; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #dc2626; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 4px;">Fuji Sunset 🗻</div>
+                    <div style="display: inline-block; font-size: 10px; padding: 2px 8px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; font-weight: 700; border-radius: 6px;">PRO</div>
+                </button>
+
+                <!-- Ocean Blue -->
+                <button class="theme-option" data-theme="ocean" data-name="Ocean Blue" onclick="switchTheme('ocean', 'Ocean Blue')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #3b82f6; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #60a5fa; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #0ea5e9; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center;">Ocean Blue 🌊</div>
+                </button>
+
+                <!-- Matcha -->
+                <button class="theme-option" data-theme="matcha" data-name="Matcha" onclick="switchTheme('matcha', 'Matcha')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #84cc16; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #65a30d; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #4d7c0f; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center;">Matcha 🍵</div>
+                </button>
+
+                <!-- Midnight Purple (PRO) -->
+                <button class="theme-option pro-theme" data-theme="midnight" data-name="Midnight Purple" onclick="switchTheme('midnight', 'Midnight Purple')">
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px; height: 40px;">
+                        <span style="flex: 1; border-radius: 8px; background: #a855f7; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #c084fc; transition: transform 0.2s;"></span>
+                        <span style="flex: 1; border-radius: 8px; background: #e879f9; transition: transform 0.2s;"></span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600; text-align: center; margin-bottom: 4px;">Midnight Purple 🌙</div>
+                    <div style="display: inline-block; font-size: 10px; padding: 2px 8px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); color: #000; font-weight: 700; border-radius: 6px;">PRO</div>
+                </button>
+            </div>
+
+            <div style="padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: rgba(255,255,255,0.6);">
+                <p>💡 <strong>Tipp:</strong> PRO Themes sind mit dem Pro-Plan verfügbar.</p>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .theme-option {
+            background: rgba(255,255,255,0.03);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            color: var(--text-main);
+        }
+
+        .theme-option:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .theme-option.active {
+            border-color: var(--accent-primary);
+            background: rgba(0,242,255,0.05);
+        }
+
+        .theme-option:hover span {
+            transform: scale(1.1);
+        }
+
+        #theme-modal.hidden {
+            display: none !important;
+        }
+    </style>
 
     <script>
         const CONFIG = {
@@ -334,33 +709,331 @@
             return div.innerHTML;
         }
 
-        // Safe localStorage wrapper with quota handling
-        const SafeStorage = {
-            get(key) {
-                try {
-                    return localStorage.getItem(key);
-                } catch (e) {
-                    console.error('LocalStorage read failed:', e);
-                    return null;
+        // ========================================
+        // INDEXEDDB IMPLEMENTATION
+        // ========================================
+        
+        // TripViz Database with IndexedDB
+        class TripVizDB {
+            constructor() {
+                this.dbName = 'TripVizDB';
+                this.version = 1;
+                this.db = null;
+            }
+
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.version);
+
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        this.db = request.result;
+                        resolve(this.db);
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+
+                        // Create trips store
+                        if (!db.objectStoreNames.contains('trips')) {
+                            const tripStore = db.createObjectStore('trips', { keyPath: 'id', autoIncrement: true });
+                            tripStore.createIndex('created_at', 'created_at', { unique: false });
+                        }
+
+                        // Create points store
+                        if (!db.objectStoreNames.contains('points')) {
+                            const pointStore = db.createObjectStore('points', { keyPath: 'id' });
+                            pointStore.createIndex('date', 'date', { unique: false });
+                            pointStore.createIndex('type', 'type', { unique: false });
+                        }
+
+                        // Create settings store
+                        if (!db.objectStoreNames.contains('settings')) {
+                            db.createObjectStore('settings', { keyPath: 'key' });
+                        }
+                    };
+                });
+            }
+
+            // CRUD operations for points
+            async savePoints(points) {
+                const tx = this.db.transaction(['points'], 'readwrite');
+                const store = tx.objectStore('points');
+                
+                // Clear existing
+                await store.clear();
+                
+                // Add all points
+                for (const point of points) {
+                    await store.add(point);
                 }
-            },
-            set(key, value) {
-                try {
-                    localStorage.setItem(key, value);
-                    return true;
-                } catch (e) {
-                    if (e.name === 'QuotaExceededError') {
-                        alert('⚠️ Speicher voll! Bitte exportiere deine Daten und lösche alte Einträge.');
-                    } else {
-                        console.error('LocalStorage write failed:', e);
+                
+                return new Promise((resolve, reject) => {
+                    tx.oncomplete = () => resolve();
+                    tx.onerror = () => reject(tx.error);
+                });
+            }
+
+            async getPoints() {
+                const tx = this.db.transaction(['points'], 'readonly');
+                const store = tx.objectStore('points');
+                const request = store.getAll();
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async addPoint(point) {
+                const tx = this.db.transaction(['points'], 'readwrite');
+                const store = tx.objectStore('points');
+                const request = store.add(point);
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async updatePoint(point) {
+                const tx = this.db.transaction(['points'], 'readwrite');
+                const store = tx.objectStore('points');
+                const request = store.put(point);
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async deletePoint(pointId) {
+                const tx = this.db.transaction(['points'], 'readwrite');
+                const store = tx.objectStore('points');
+                const request = store.delete(pointId);
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // Settings operations
+            async saveSetting(key, value) {
+                const tx = this.db.transaction(['settings'], 'readwrite');
+                const store = tx.objectStore('settings');
+                const request = store.put({ key, value });
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            async getSetting(key) {
+                const tx = this.db.transaction(['settings'], 'readonly');
+                const store = tx.objectStore('settings');
+                const request = store.get(key);
+
+                return new Promise((resolve, reject) => {
+                    request.onsuccess = () => resolve(request.result?.value);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // Export all data
+            async exportData() {
+                const points = await this.getPoints();
+                const theme = await this.getSetting('theme');
+                
+                return {
+                    version: 1,
+                    exportDate: new Date().toISOString(),
+                    points: points,
+                    settings: {
+                        theme: theme || 'cyberpunk'
                     }
-                    return false;
+                };
+            }
+
+            // Import data
+            async importData(data) {
+                if (!data.points || !Array.isArray(data.points)) {
+                    throw new Error('Invalid data format');
+                }
+
+                await this.savePoints(data.points);
+                
+                if (data.settings?.theme) {
+                    await this.saveSetting('theme', data.settings.theme);
                 }
             }
-        };
+
+            // Get statistics
+            async getStats() {
+                const points = await this.getPoints();
+                
+                const activities = points.filter(p => p.type === 'activity');
+                const transports = points.filter(p => p.type === 'transport');
+                const totalBudget = points.reduce((sum, p) => sum + (p.budget || 0), 0);
+                
+                return {
+                    totalPoints: points.length,
+                    activities: activities.length,
+                    transports: transports.length,
+                    totalBudget: totalBudget,
+                    avgBudgetPerPoint: points.length > 0 ? totalBudget / points.length : 0
+                };
+            }
+        }
+
+        // Hybrid Storage: localStorage fallback + migration
+        class HybridStorage {
+            constructor() {
+                this.db = new TripVizDB();
+                this.ready = false;
+                this.useLocalStorage = false;
+            }
+
+            async init() {
+                try {
+                    await this.db.init();
+                    this.ready = true;
+                    this.useLocalStorage = false;
+                    
+                    // Auto-migrate from localStorage
+                    await this.migrateFromLocalStorage();
+                    
+                    console.log('✅ IndexedDB initialized');
+                } catch (error) {
+                    console.warn('⚠️ IndexedDB failed, using localStorage:', error);
+                    this.useLocalStorage = true;
+                    this.ready = true;
+                }
+            }
+
+            async migrateFromLocalStorage() {
+                const oldData = localStorage.getItem(CONFIG.STORAGE_KEY);
+                if (!oldData) return;
+
+                try {
+                    const points = JSON.parse(oldData);
+                    if (Array.isArray(points) && points.length > 0) {
+                        const existingPoints = await this.db.getPoints();
+                        
+                        // Only migrate if IndexedDB is empty
+                        if (existingPoints.length === 0) {
+                            console.log('🔄 Migrating', points.length, 'points from localStorage to IndexedDB...');
+                            await this.db.savePoints(points);
+                            
+                            // Keep localStorage as backup for now
+                            console.log('✅ Migration complete!');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Migration failed:', error);
+                }
+            }
+
+            async savePoints(points) {
+                if (this.useLocalStorage) {
+                    try {
+                        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(points));
+                    } catch (e) {
+                        if (e.name === 'QuotaExceededError') {
+                            alert('⚠️ Speicher voll! Bitte exportiere deine Daten.');
+                        }
+                    }
+                } else {
+                    await this.db.savePoints(points);
+                    // Also backup to localStorage
+                    try {
+                        localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(points));
+                    } catch (e) {
+                        // Ignore localStorage errors when using IndexedDB
+                    }
+                }
+            }
+
+            async getPoints() {
+                if (this.useLocalStorage) {
+                    try {
+                        const data = localStorage.getItem(CONFIG.STORAGE_KEY);
+                        return data ? JSON.parse(data) : [];
+                    } catch (e) {
+                        console.error('LocalStorage read failed:', e);
+                        return [];
+                    }
+                } else {
+                    return await this.db.getPoints();
+                }
+            }
+
+            async saveSetting(key, value) {
+                if (this.useLocalStorage) {
+                    localStorage.setItem(`setting_${key}`, JSON.stringify(value));
+                } else {
+                    await this.db.saveSetting(key, value);
+                }
+            }
+
+            async getSetting(key) {
+                if (this.useLocalStorage) {
+                    const data = localStorage.getItem(`setting_${key}`);
+                    return data ? JSON.parse(data) : null;
+                } else {
+                    return await this.db.getSetting(key);
+                }
+            }
+
+            async exportData() {
+                if (this.useLocalStorage) {
+                    const points = await this.getPoints();
+                    return {
+                        version: 1,
+                        exportDate: new Date().toISOString(),
+                        points: points
+                    };
+                } else {
+                    return await this.db.exportData();
+                }
+            }
+
+            async importData(data) {
+                if (this.useLocalStorage) {
+                    if (!data.points || !Array.isArray(data.points)) {
+                        throw new Error('Invalid data format');
+                    }
+                    await this.savePoints(data.points);
+                } else {
+                    await this.db.importData(data);
+                }
+            }
+
+            async getStats() {
+                if (this.useLocalStorage) {
+                    const points = await this.getPoints();
+                    const activities = points.filter(p => p.type === 'activity');
+                    const transports = points.filter(p => p.type === 'transport');
+                    const totalBudget = points.reduce((sum, p) => sum + (p.budget || 0), 0);
+                    
+                    return {
+                        totalPoints: points.length,
+                        activities: activities.length,
+                        transports: transports.length,
+                        totalBudget: totalBudget
+                    };
+                } else {
+                    return await this.db.getStats();
+                }
+            }
+        }
+
+        // Global storage instance
+        const storage = new HybridStorage();
 
         let state = {
-            points: JSON.parse(SafeStorage.get(CONFIG.STORAGE_KEY)) || [],
+            points: [],
             map: null,
             markers: [],
             paths: [],
@@ -380,7 +1053,22 @@
             filter: document.getElementById('day-filter')
         };
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize storage first
+            await storage.init();
+            
+            // Load points from storage
+            state.points = await storage.getPoints();
+            
+            // Initialize theme
+            const savedTheme = await storage.getSetting('theme') || localStorage.getItem('tripviz-theme') || 'cyberpunk';
+            initTheme();
+            if (savedTheme !== 'cyberpunk') {
+                applyTheme(savedTheme);
+                updateThemeUI(savedTheme);
+            }
+            
+            // Initialize map and UI
             initMap();
             setupEventListeners();
             updateUI();
@@ -541,16 +1229,15 @@
         }
 
         function deleteEntry() { state.points = state.points.filter(p => p.id !== state.editingId); syncAndSave(); closeModal(); }
-        function syncAndSave() { SafeStorage.set(CONFIG.STORAGE_KEY, JSON.stringify(state.points)); updateUI(); }
+        async function syncAndSave() { 
+            await storage.savePoints(state.points); 
+            updateUI(); 
+        }
         
         // Export/Import Functions
-        function exportData() {
+        async function exportData() {
             try {
-                const data = {
-                    version: 1,
-                    exportDate: new Date().toISOString(),
-                    points: state.points
-                };
+                const data = await storage.exportData();
                 
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -567,11 +1254,11 @@
             }
         }
         
-        function importData(file) {
+        async function importData(file) {
             if (!file) return;
             
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
                     
@@ -580,8 +1267,16 @@
                     }
                     
                     if (confirm(`${data.points.length} Einträge importieren?\n\n⚠️ Bestehende Daten werden überschrieben!`)) {
-                        state.points = data.points;
-                        syncAndSave();
+                        await storage.importData(data);
+                        state.points = await storage.getPoints();
+                        
+                        // Apply theme if included
+                        if (data.settings?.theme) {
+                            applyTheme(data.settings.theme);
+                            updateThemeUI(data.settings.theme);
+                        }
+                        
+                        updateUI();
                         alert(`✅ ${data.points.length} Einträge erfolgreich importiert!`);
                     }
                 } catch (error) {
@@ -591,9 +1286,111 @@
             };
             reader.readAsText(file);
         }
+
+        // Show storage statistics
+        async function showStats() {
+            try {
+                const stats = await storage.getStats();
+                const storageType = storage.useLocalStorage ? 'LocalStorage' : 'IndexedDB';
+                
+                alert(`📊 TripViz Statistiken\n\n` +
+                      `💾 Speicher: ${storageType}\n` +
+                      `📍 Stopps gesamt: ${stats.totalPoints}\n` +
+                      `🎯 Aktivitäten: ${stats.activities}\n` +
+                      `🚆 Transport: ${stats.transports}\n` +
+                      `💰 Gesamt-Budget: ¥${stats.totalBudget.toLocaleString()}`);
+            } catch (error) {
+                console.error('Stats failed:', error);
+                alert('Statistiken konnten nicht geladen werden.');
+            }
+        }
         
-        // Make export available globally
+        // Make functions available globally
         window.exportTripData = exportData;
+        window.showTripStats = showStats;
+        
+        // ========================================
+        // THEME MANAGEMENT
+        // ========================================
+        
+        const PRO_THEMES = ['neon', 'fuji', 'midnight'];
+        const THEME_NAMES = {
+            'cyberpunk': 'Cyberpunk',
+            'sakura': 'Sakura',
+            'zen': 'Zen Garden',
+            'neon': 'Tokyo Neon',
+            'fuji': 'Fuji Sunset',
+            'ocean': 'Ocean Blue',
+            'matcha': 'Matcha',
+            'midnight': 'Midnight Purple'
+        };
+        
+        // Initialize theme on load
+        function initTheme() {
+            const savedTheme = localStorage.getItem('tripviz-theme') || 'cyberpunk';
+            applyTheme(savedTheme);
+            updateThemeUI(savedTheme);
+        }
+        
+        function toggleThemeSelector() {
+            const modal = document.getElementById('theme-modal');
+            modal.classList.toggle('hidden');
+        }
+        
+        function closeThemeSelector() {
+            document.getElementById('theme-modal').classList.add('hidden');
+        }
+        
+        async function switchTheme(theme, themeName) {
+            // Check if Pro theme
+            if (PRO_THEMES.includes(theme)) {
+                // For now, show alert (later integrate with actual Pro check)
+                if (!confirm(`${themeName} ist ein PRO Theme.\n\nMöchtest du es trotzdem ausprobieren? (Normalerweise nur für Pro-Nutzer verfügbar)`)) {
+                    return;
+                }
+            }
+            
+            applyTheme(theme);
+            updateThemeUI(theme);
+            
+            // Save to both localStorage (backup) and IndexedDB
+            localStorage.setItem('tripviz-theme', theme);
+            await storage.saveSetting('theme', theme);
+            
+            // Close modal
+            closeThemeSelector();
+            
+            // Update map colors
+            updateMapColors();
+        }
+        
+        function applyTheme(theme) {
+            // Remove all theme classes
+            document.documentElement.className = '';
+            
+            // Add new theme class
+            if (theme !== 'cyberpunk') {
+                document.documentElement.classList.add(`theme-${theme}`);
+            }
+        }
+        
+        function updateThemeUI(theme) {
+            // Update active state in modal
+            document.querySelectorAll('.theme-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === theme);
+            });
+            
+            // Update current theme name in sidebar
+            const themeNameEl = document.getElementById('current-theme-name');
+            if (themeNameEl) {
+                themeNameEl.textContent = THEME_NAMES[theme] || 'Cyberpunk';
+            }
+        }
+        
+        function updateMapColors() {
+            // Simply re-render the map with new colors
+            renderMap();
+        }
         
 function updateUI() { renderList(); updateFilter(); renderMap(); }
 
@@ -666,18 +1463,24 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
         };
 
         function renderMap() {
+            // Get current theme colors
+            const root = getComputedStyle(document.documentElement);
+            const primaryColor = root.getPropertyValue('--accent-primary').trim();
+            const transportColor = root.getPropertyValue('--accent-transport').trim();
+            const pathColor = root.getPropertyValue('--accent-path').trim();
+            
             state.markers.forEach(m => state.map.removeLayer(m)); state.paths.forEach(p => state.map.removeLayer(p)); state.activityPaths.forEach(p => state.map.removeLayer(p));
             state.markers = []; state.paths = []; state.activityPaths = [];
             const filterVal = el.filter.value;
             const displayedPoints = filterVal === 'all' ? state.points : state.points.filter(p => p.date === filterVal);
             displayedPoints.forEach(p => {
-                const color = p.type === 'activity' ? '#00f2ff' : '#ff2d55';
+                const color = p.type === 'activity' ? primaryColor : transportColor;
                 if(p.coords) { const m = L.circleMarker(p.coords, { radius: 7, color: '#fff', weight: 2, fillColor: color, fillOpacity: 1 }).addTo(state.map); state.markers.push(m); }
                 if(p.type === 'transport' && p.coords && p.endCoords) { const line = L.polyline.antPath([p.coords, p.endCoords], { color: color, weight: 4, pulseColor: '#fff', dashArray: [10, 20] }).addTo(state.map); state.paths.push(line); }
             });
             if (filterVal !== 'all' && displayedPoints.length > 1) {
                 const routeCoords = displayedPoints.map(p => p.coords).filter(c => c !== null);
-                if (routeCoords.length > 1) { const activityLine = L.polyline(routeCoords, { color: '#3b82f6', weight: 2, dashArray: '5, 10', opacity: 0.6, interactive: false }).addTo(state.map); state.activityPaths.push(activityLine); }
+                if (routeCoords.length > 1) { const activityLine = L.polyline(routeCoords, { color: pathColor, weight: 2, dashArray: '5, 10', opacity: 0.6, interactive: false }).addTo(state.map); state.activityPaths.push(activityLine); }
             }
             if (displayedPoints.length > 0) { const group = new L.featureGroup([...state.markers, ...state.paths, ...state.activityPaths]); state.map.fitBounds(group.getBounds(), { padding: [80, 80] }); }
         }
