@@ -423,6 +423,193 @@
             cursor: grab;
             min-width: 44px;
         }
+
+        /* Image Upload Styles */
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-item .delete-image-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .image-preview-item:hover .delete-image-btn {
+            opacity: 1;
+        }
+
+        .image-preview-item .delete-image-btn:hover {
+            background: rgba(220, 38, 38, 0.9);
+        }
+
+        .upload-button-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .upload-button-content:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--accent-primary);
+            color: var(--text-main);
+        }
+
+        .point-thumbnail {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .point-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .point-images-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+            align-items: center;
+        }
+
+        .more-images-badge {
+            font-size: 10px;
+            padding: 4px 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            color: var(--text-secondary);
+        }
+
+        /* Lightbox */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .lightbox-nav {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-top: 20px;
+            color: white;
+        }
+
+        .lightbox-nav button {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .lightbox-nav button:hover:not(:disabled) {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .lightbox-nav button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Time Block Styles */
+        .time-block {
+            transition: all 0.2s;
+        }
+
+        .time-block:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -467,6 +654,39 @@
                     <div id="point-suggestions" class="suggestions-box hidden absolute top-full left-0 right-0 bg-[#1a1a1a] border border-white/10 rounded-xl z-10"></div>
                 </div>
 
+                <!-- Image Upload Section (only for activities) -->
+                <div id="image-upload-section" class="hidden">
+                    <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">
+                        📸 Bilder <span id="image-count-label">(0/5)</span>
+                    </label>
+                    
+                    <div id="image-preview-grid" class="image-preview-grid mb-3">
+                        <!-- Image previews will be shown here -->
+                    </div>
+                    
+                    <label class="image-upload-button">
+                        <input 
+                            type="file" 
+                            id="image-input" 
+                            accept="image/*" 
+                            multiple 
+                            class="hidden"
+                        >
+                        <div class="upload-button-content">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path d="M21 15l-5-5L5 21"/>
+                            </svg>
+                            <span>Bilder hinzufügen</span>
+                        </div>
+                    </label>
+                    
+                    <div class="text-[10px] text-white/40 mt-2">
+                        Bilder werden komprimiert (~200KB pro Bild). Free: Max 5 Bilder.
+                    </div>
+                </div>
+
                 <div id="transport-group" class="hidden space-y-4">
                     <div class="relative">
                         <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Von</label>
@@ -495,8 +715,45 @@
                         <input type="date" id="point-date">
                     </div>
                     <div>
+                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Uhrzeit</label>
+                        <select id="point-time" class="!py-2">
+                            <option value="">Keine Angabe</option>
+                            <optgroup label="🌅 Morgen">
+                                <option value="06:00">06:00 Uhr</option>
+                                <option value="07:00">07:00 Uhr</option>
+                                <option value="08:00">08:00 Uhr</option>
+                                <option value="09:00">09:00 Uhr</option>
+                                <option value="10:00">10:00 Uhr</option>
+                                <option value="11:00">11:00 Uhr</option>
+                            </optgroup>
+                            <optgroup label="☀️ Mittag">
+                                <option value="12:00">12:00 Uhr</option>
+                                <option value="13:00">13:00 Uhr</option>
+                                <option value="14:00">14:00 Uhr</option>
+                                <option value="15:00">15:00 Uhr</option>
+                                <option value="16:00">16:00 Uhr</option>
+                            </optgroup>
+                            <optgroup label="🌙 Abend">
+                                <option value="17:00">17:00 Uhr</option>
+                                <option value="18:00">18:00 Uhr</option>
+                                <option value="19:00">19:00 Uhr</option>
+                                <option value="20:00">20:00 Uhr</option>
+                                <option value="21:00">21:00 Uhr</option>
+                                <option value="22:00">22:00 Uhr</option>
+                                <option value="23:00">23:00 Uhr</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
                         <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Budget (¥)</label>
-                        <input type="number" id="point-budget" placeholder="0" inputmode="numeric">
+                        <input type="number" id="point-budget-jpy" placeholder="0" inputmode="numeric">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-white/40 uppercase font-bold ml-1 mb-1 block">Budget (€)</label>
+                        <input type="number" id="point-budget-eur" placeholder="0" step="0.01" inputmode="decimal">
                     </div>
                 </div>
 
@@ -717,7 +974,7 @@
         class TripVizDB {
             constructor() {
                 this.dbName = 'TripVizDB';
-                this.version = 1;
+                this.version = 2; // Updated for images store
                 this.db = null;
             }
 
@@ -1043,8 +1300,179 @@
             tempCoords: { start: null, end: null },
             searchDebounce: null,
             sortables: [],
-            uiState: { sidebar: false, modal: false } 
+            uiState: { sidebar: false, modal: false },
+            currentImages: [] // NEW: Images for current point
         };
+
+        // IMAGE HANDLING FUNCTIONS
+        async function handleImageUpload(event) {
+            const files = Array.from(event.target.files);
+            const MAX_IMAGES = 5;
+            
+            if (state.currentImages.length + files.length > MAX_IMAGES) {
+                alert(`⚠️ Maximal ${MAX_IMAGES} Bilder pro Aktivität!\n\n💎 Mit Pro: Unbegrenzte Bilder`);
+                return;
+            }
+            
+            for (const file of files) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Nur Bilder erlaubt!');
+                    continue;
+                }
+                
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Bild zu groß! Max 10MB vor Kompression.');
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.currentImages.push({
+                        data: e.target.result,
+                        filename: file.name,
+                        file: file,
+                        temp: true
+                    });
+                    renderImagePreview();
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            event.target.value = '';
+        }
+
+        function renderImagePreview() {
+            const container = document.getElementById('image-preview-grid');
+            const label = document.getElementById('image-count-label');
+            
+            if (!container || !label) return;
+            
+            label.textContent = `(${state.currentImages.length}/5)`;
+            
+            container.innerHTML = state.currentImages.map((img, index) => `
+                <div class="image-preview-item">
+                    <img src="${img.thumbnail || img.data}" alt="${escapeHtml(img.filename)}">
+                    <button class="delete-image-btn" onclick="removeImage(${index})" type="button">×</button>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(index) {
+            const img = state.currentImages[index];
+            
+            if (img.id && !img.temp) {
+                if (confirm('Bild permanent löschen?')) {
+                    storage.db.deleteImage(img.id).catch(err => {
+                        console.error('Delete failed:', err);
+                    });
+                } else {
+                    return;
+                }
+            }
+            
+            state.currentImages.splice(index, 1);
+            renderImagePreview();
+        }
+
+        function showLightbox(images, startIndex = 0) {
+            let currentIndex = startIndex;
+            
+            const lightbox = document.createElement('div');
+            lightbox.className = 'lightbox';
+            lightbox.id = 'image-lightbox';
+            
+            function render() {
+                lightbox.innerHTML = `
+                    <div class="lightbox-content">
+                        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+                        <img src="${images[currentIndex].data}" alt="" class="lightbox-image">
+                        <div class="lightbox-nav">
+                            <button 
+                                ${currentIndex === 0 ? 'disabled' : ''} 
+                                onclick="lightboxPrev()">
+                                ← Zurück
+                            </button>
+                            <span>${currentIndex + 1} / ${images.length}</span>
+                            <button 
+                                ${currentIndex === images.length - 1 ? 'disabled' : ''} 
+                                onclick="lightboxNext()">
+                                Weiter →
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            window.lightboxPrev = () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    render();
+                }
+            };
+            
+            window.lightboxNext = () => {
+                if (currentIndex < images.length - 1) {
+                    currentIndex++;
+                    render();
+                }
+            };
+            
+            window.closeLightbox = () => {
+                lightbox.remove();
+                delete window.lightboxPrev;
+                delete window.lightboxNext;
+                delete window.closeLightbox;
+            };
+            
+            lightbox.onclick = (e) => {
+                if (e.target === lightbox) {
+                    closeLightbox();
+                }
+            };
+            
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeLightbox();
+                    document.removeEventListener('keydown', escHandler);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+            
+            render();
+            document.body.appendChild(lightbox);
+        }
+
+        async function loadPointImages(pointId) {
+            try {
+                const images = await storage.db.getImages(pointId);
+                if (images.length === 0) return;
+                
+                const container = document.querySelector(`[data-point-id="${pointId}"]`);
+                if (!container) return;
+                
+                container.innerHTML = `
+                    <div class="point-thumbnail" onclick="event.stopPropagation(); openPointLightbox(${pointId}, 0)">
+                        <img src="${images[0].thumbnail || images[0].data}" alt="">
+                    </div>
+                    ${images.length > 1 ? `<span class="more-images-badge">+${images.length - 1}</span>` : ''}
+                `;
+            } catch (error) {
+                console.error('Load images failed:', error);
+            }
+        }
+
+        async function openPointLightbox(pointId, startIndex = 0) {
+            try {
+                const images = await storage.db.getImages(pointId);
+                if (images.length > 0) {
+                    showLightbox(images, startIndex);
+                }
+            } catch (error) {
+                console.error('Open lightbox failed:', error);
+            }
+        }
+        
+        window.openPointLightbox = openPointLightbox;
 
         const el = {
             sidebar: document.getElementById('sidebar'),
@@ -1079,10 +1507,31 @@
             el.sidebar.classList.toggle('open', state.uiState.sidebar);
         }
 
-        function openModal() {
+        async function openModal() {
             state.uiState.modal = true;
             el.overlay.classList.add('open');
             document.getElementById('delete-btn').classList.toggle('hidden', !state.editingId);
+            
+            // Load images if editing an activity
+            if (state.editingId && state.currentType === 'activity') {
+                try {
+                    const images = await storage.db.getImages(state.editingId);
+                    state.currentImages = images.map(img => ({
+                        id: img.id,
+                        data: img.data,
+                        thumbnail: img.thumbnail,
+                        filename: img.filename,
+                        temp: false // Already saved
+                    }));
+                    renderImagePreview();
+                } catch (error) {
+                    console.error('Load images failed:', error);
+                    state.currentImages = [];
+                }
+            } else {
+                state.currentImages = [];
+                renderImagePreview();
+            }
         }
 
         function closeModal() {
@@ -1090,6 +1539,7 @@
             el.overlay.classList.remove('open');
             state.editingId = null;
             state.tempCoords = { start: null, end: null };
+            state.currentImages = []; // Clear images
         }
 
         function initMap() {
@@ -1136,7 +1586,18 @@
             document.getElementById('type-transport').onclick = () => setType('transport');
             document.getElementById('save-btn').onclick = saveEntry;
             document.getElementById('delete-btn').onclick = deleteEntry;
+            document.getElementById('image-input').onchange = handleImageUpload;
             el.filter.onchange = updateUI;
+            
+            // Currency synchronization
+            document.getElementById('point-budget-jpy').oninput = (e) => {
+                const jpy = parseFloat(e.target.value) || 0;
+                document.getElementById('point-budget-eur').value = (jpy * CONFIG.JPY_EUR).toFixed(2);
+            };
+            document.getElementById('point-budget-eur').oninput = (e) => {
+                const eur = parseFloat(e.target.value) || 0;
+                document.getElementById('point-budget-jpy').value = Math.round(eur / CONFIG.JPY_EUR);
+            };
 
             const searchInputs = ['global-search', 'point-title', 'transport-start', 'transport-end'];
             searchInputs.forEach(id => {
@@ -1151,6 +1612,7 @@
             state.currentType = t;
             const isAct = t === 'activity';
             document.getElementById('activity-group').classList.toggle('hidden', !isAct);
+            document.getElementById('image-upload-section').classList.toggle('hidden', !isAct);
             document.getElementById('transport-group').classList.toggle('hidden', isAct);
             document.getElementById('type-activity').className = isAct ? "flex-1 py-3 text-[11px] font-bold rounded-xl bg-cyan-400 text-black shadow-lg" : "flex-1 py-3 text-[11px] font-bold rounded-xl text-white/30";
             document.getElementById('type-transport').className = !isAct ? "flex-1 py-3 text-[11px] font-bold rounded-xl bg-rose-500 text-white shadow-lg" : "flex-1 py-3 text-[11px] font-bold rounded-xl text-white/30";
@@ -1205,12 +1667,14 @@
             state.map.flyTo(coords, 15);
         };
 
-        function saveEntry() {
+        async function saveEntry() {
             const data = {
                 id: state.editingId || Date.now(),
                 type: state.currentType,
                 date: document.getElementById('point-date').value,
-                budget: parseFloat(document.getElementById('point-budget').value) || 0,
+                time: document.getElementById('point-time').value || '',
+                budget: parseFloat(document.getElementById('point-budget-jpy').value) || 0,
+                budgetEur: parseFloat(document.getElementById('point-budget-eur').value) || 0,
                 desc: escapeHtml(document.getElementById('point-desc').value.trim()),
                 coords: state.tempCoords.start,
                 endCoords: state.tempCoords.end
@@ -1225,7 +1689,23 @@
             }
             if(state.editingId) { state.points = state.points.map(p => p.id === state.editingId ? data : p); }
             else { state.points.push(data); }
-            syncAndSave(); closeModal();
+            
+            await syncAndSave();
+            
+            // Save images for activities
+            if (state.currentType === 'activity' && state.currentImages.length > 0) {
+                for (const img of state.currentImages) {
+                    if (img.temp && img.file) {
+                        try {
+                            await storage.db.addImage(data.id, img.file);
+                        } catch (error) {
+                            console.error('Image save failed:', error);
+                        }
+                    }
+                }
+            }
+            
+            closeModal();
         }
 
         function deleteEntry() { state.points = state.points.filter(p => p.id !== state.editingId); syncAndSave(); closeModal(); }
@@ -1293,12 +1773,25 @@
                 const stats = await storage.getStats();
                 const storageType = storage.useLocalStorage ? 'LocalStorage' : 'IndexedDB';
                 
+                // Get image stats
+                let imageInfo = '';
+                if (!storage.useLocalStorage) {
+                    try {
+                        const imageCount = await storage.db.getImageCount();
+                        const imageSize = await storage.db.getImagesSize();
+                        const imageSizeMB = (imageSize / (1024 * 1024)).toFixed(2);
+                        imageInfo = `\n📸 Bilder: ${imageCount} (${imageSizeMB} MB)`;
+                    } catch (e) {
+                        imageInfo = '\n📸 Bilder: Fehler beim Laden';
+                    }
+                }
+                
                 alert(`📊 TripViz Statistiken\n\n` +
                       `💾 Speicher: ${storageType}\n` +
                       `📍 Stopps gesamt: ${stats.totalPoints}\n` +
                       `🎯 Aktivitäten: ${stats.activities}\n` +
                       `🚆 Transport: ${stats.transports}\n` +
-                      `💰 Gesamt-Budget: ¥${stats.totalBudget.toLocaleString()}`);
+                      `💰 Gesamt-Budget: ¥${stats.totalBudget.toLocaleString()}${imageInfo}`);
             } catch (error) {
                 console.error('Stats failed:', error);
                 alert('Statistiken konnten nicht geladen werden.');
@@ -1404,30 +1897,175 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
         function renderList() {
             const filterVal = el.filter.value;
             let totalJPY = 0;
-            const grouped = state.points.reduce((acc, p) => { if(!acc[p.date]) acc[p.date] = []; acc[p.date].push(p); return acc; }, {});
+            const grouped = state.points.reduce((acc, p) => { 
+                if(!acc[p.date]) acc[p.date] = []; 
+                acc[p.date].push(p); 
+                return acc; 
+            }, {});
+            
             el.list.innerHTML = '';
+            
             Object.keys(grouped).sort().forEach(date => {
-                const daySum = grouped[date].reduce((s, p) => s + p.budget, 0);
+                const dayPoints = grouped[date];
+                const daySum = dayPoints.reduce((s, p) => s + p.budget, 0);
                 totalJPY += daySum;
+                
                 if(filterVal !== 'all' && date !== filterVal) return;
+                
                 const dayLabel = new Date(date).toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long'});
+                
+                // Group points by time block
+                const timeBlocks = {
+                    morning: dayPoints.filter(p => {
+                        if (!p.time) return false;
+                        const hour = parseInt(p.time.split(':')[0]);
+                        return hour >= 6 && hour < 12;
+                    }),
+                    afternoon: dayPoints.filter(p => {
+                        if (!p.time) return false;
+                        const hour = parseInt(p.time.split(':')[0]);
+                        return hour >= 12 && hour < 17;
+                    }),
+                    evening: dayPoints.filter(p => {
+                        if (!p.time) return false;
+                        const hour = parseInt(p.time.split(':')[0]);
+                        return hour >= 17 || hour < 6;
+                    }),
+                    noTime: dayPoints.filter(p => !p.time)
+                };
+                
                 const groupDiv = document.createElement('div');
-                groupDiv.className = "day-group mb-8"; groupDiv.dataset.date = date;
-                groupDiv.innerHTML = `<div class="flex justify-between items-end mb-4 px-1"><h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">${dayLabel}</h4><span class="text-[10px] font-bold text-white/40">¥ ${daySum.toLocaleString()}</span></div><div class="sortable-list min-h-[20px]"></div>`;
-                const listContainer = groupDiv.querySelector('.sortable-list');
-                grouped[date].forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = "itinerary-card flex items-center"; card.dataset.id = p.id;
-                    card.innerHTML = `<div class="drag-handle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-30"><circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/></svg></div><div class="flex-grow py-1" onclick="editEntryById(${p.id})"><div class="flex justify-between items-start gap-3"><p class="text-[13px] font-bold text-white/90 leading-tight">${p.title}</p><div class="text-right"><p class="text-[11px] font-bold text-cyan-400">¥${p.budget.toLocaleString()}</p></div></div>${p.desc ? `<p class="text-[10px] text-white/30 mt-1 line-clamp-1">${p.desc}</p>` : ''}</div>`;
-                    listContainer.appendChild(card);
+                groupDiv.className = "day-group mb-8";
+                groupDiv.dataset.date = date;
+                
+                // Day header
+                groupDiv.innerHTML = `
+                    <div class="flex justify-between items-end mb-4 px-1">
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-white/20">${dayLabel}</h4>
+                        <span class="text-[10px] font-bold text-white/40">¥ ${daySum.toLocaleString()}</span>
+                    </div>
+                `;
+                
+                // Render time blocks
+                const blocks = [
+                    { key: 'morning', label: '🌅 Morgen', points: timeBlocks.morning, color: 'from-amber-500/10 to-orange-500/10' },
+                    { key: 'afternoon', label: '☀️ Mittag', points: timeBlocks.afternoon, color: 'from-yellow-500/10 to-amber-500/10' },
+                    { key: 'evening', label: '🌙 Abend', points: timeBlocks.evening, color: 'from-indigo-500/10 to-purple-500/10' },
+                    { key: 'noTime', label: '⏰ Keine Zeit', points: timeBlocks.noTime, color: 'from-white/5 to-white/5' }
+                ];
+                
+                blocks.forEach(block => {
+                    if (block.points.length === 0) return;
+                    
+                    const blockSum = block.points.reduce((s, p) => s + p.budget, 0);
+                    
+                    const blockDiv = document.createElement('div');
+                    blockDiv.className = `time-block mb-4 bg-gradient-to-r ${block.color} rounded-xl border border-white/5`;
+                    
+                    blockDiv.innerHTML = `
+                        <div class="flex justify-between items-center px-3 py-2 border-b border-white/5">
+                            <span class="text-[10px] font-bold text-white/60">${block.label}</span>
+                            <span class="text-[10px] font-bold text-white/40">¥ ${blockSum.toLocaleString()}</span>
+                        </div>
+                        <div class="sortable-list-${block.key} p-2"></div>
+                    `;
+                    
+                    const listContainer = blockDiv.querySelector(`.sortable-list-${block.key}`);
+                    
+                    // Sort by time within block
+                    const sortedPoints = [...block.points].sort((a, b) => {
+                        if (!a.time && !b.time) return 0;
+                        if (!a.time) return 1;
+                        if (!b.time) return -1;
+                        return a.time.localeCompare(b.time);
+                    });
+                    
+                    sortedPoints.forEach(p => {
+                        const card = document.createElement('div');
+                        card.className = "itinerary-card flex items-center mb-2";
+                        card.dataset.id = p.id;
+                        
+                        card.innerHTML = `
+                            <div class="drag-handle">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-30">
+                                    <circle cx="9" cy="5" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="9" cy="19" r="1.5"/>
+                                    <circle cx="15" cy="5" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
+                                </svg>
+                            </div>
+                            <div class="flex-grow py-1" onclick="editEntryById(${p.id})">
+                                <div class="flex justify-between items-start gap-3">
+                                    <div class="flex items-center gap-2">
+                                        ${p.time ? `<span class="text-[10px] font-bold text-white/40">${p.time}</span>` : ''}
+                                        <p class="text-[13px] font-bold text-white/90 leading-tight">${escapeHtml(p.title)}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[11px] font-bold text-cyan-400">¥${p.budget.toLocaleString()}</p>
+                                        ${p.budgetEur ? `<p class="text-[9px] text-white/30">€${p.budgetEur.toFixed(2)}</p>` : ''}
+                                    </div>
+                                </div>
+                                ${p.desc ? `<p class="text-[10px] text-white/30 mt-1 line-clamp-1">${escapeHtml(p.desc)}</p>` : ''}
+                                <div class="point-images-indicator" data-point-id="${p.id}">
+                                    <!-- Images will be loaded here -->
+                                </div>
+                            </div>
+                        `;
+                        
+                        listContainer.appendChild(card);
+                        
+                        // Load images for activity points
+                        if (p.type === 'activity') {
+                            loadPointImages(p.id);
+                        }
+                    });
+                    
+                    groupDiv.appendChild(blockDiv);
                 });
+                
                 el.list.appendChild(groupDiv);
             });
+            
             initSortable();
             document.getElementById('total-jpy').innerText = `¥ ${totalJPY.toLocaleString()}`;
             document.getElementById('total-eur').innerText = `€ ${(totalJPY * CONFIG.JPY_EUR).toLocaleString('de-DE', {minimumFractionDigits: 2})}`;
             document.getElementById('point-count').innerText = `${state.points.length} Stopps`;
         }
+
+        // Load and display images for a point
+        async function loadPointImages(pointId) {
+            try {
+                const images = await storage.db.getImages(pointId);
+                if (images.length === 0) return;
+                
+                const container = document.querySelector(`[data-point-id="${pointId}"]`);
+                if (!container) return;
+                
+                container.innerHTML = `
+                    <div class="point-images-indicator">
+                        <div class="point-thumbnail" onclick="event.stopPropagation(); openPointLightbox(${pointId}, 0)">
+                            <img src="${images[0].thumbnail || images[0].data}" alt="">
+                        </div>
+                        ${images.length > 1 ? `<span class="more-images-badge">+${images.length - 1}</span>` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Load images failed:', error);
+            }
+        }
+
+        // Open lightbox for point images
+        async function openPointLightbox(pointId, startIndex = 0) {
+            try {
+                const images = await storage.db.getImages(pointId);
+                if (images.length > 0) {
+                    showLightbox(images, startIndex);
+                }
+            } catch (error) {
+                console.error('Open lightbox failed:', error);
+            }
+        }
+        
+        // Make function available globally
+        window.openPointLightbox = openPointLightbox;
 
         function initSortable() {
             state.sortables.forEach(s => s.destroy());
@@ -1458,7 +2096,11 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
                 const parts = p.title.split(': ')[1]?.split(' → ') || ["", ""];
                 document.getElementById('transport-start').value = parts[0]; document.getElementById('transport-end').value = parts[1];
             }
-            document.getElementById('point-budget').value = p.budget; document.getElementById('point-desc').value = p.desc; document.getElementById('point-date').value = p.date;
+            document.getElementById('point-budget-jpy').value = p.budget || 0;
+            document.getElementById('point-budget-eur').value = p.budgetEur || (p.budget * CONFIG.JPY_EUR).toFixed(2);
+            document.getElementById('point-time').value = p.time || '';
+            document.getElementById('point-desc').value = p.desc;
+            document.getElementById('point-date').value = p.date;
             if(p.coords) state.map.flyTo(p.coords, 14);
         };
 
