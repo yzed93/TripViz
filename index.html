@@ -303,17 +303,64 @@
         </div>
 
         <div id="itinerary-list" class="flex-grow overflow-y-auto px-6 pb-24"></div>
+        
+        <!-- Export/Import Controls -->
+        <div class="px-6 pb-6 border-t border-white/5 pt-4">
+            <div class="flex gap-2 mb-3">
+                <button onclick="exportTripData()" class="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white/70 text-xs font-bold rounded-xl border border-white/10 transition-all active:scale-95">
+                    📥 Export
+                </button>
+                <label class="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white/70 text-xs font-bold rounded-xl border border-white/10 transition-all cursor-pointer text-center active:scale-95">
+                    📤 Import
+                    <input type="file" accept=".json" onchange="importData(this.files[0]); this.value='';" class="hidden">
+                </label>
+            </div>
+        </div>
     </aside>
 
     <script>
         const CONFIG = {
             STADIA_KEY: "2831d4eb-094e-4752-a3c9-1ae9e9d65f94",
             STORAGE_KEY: 'tripviz_mobile_v3',
-            JPY_EUR: 1 / 160.50
+            JPY_EUR: 1 / 160.50,
+            SEARCH_DEBOUNCE_MS: 1000 // Increased for Nominatim rate limiting (1 req/sec)
+        };
+
+        // Utility: Escape HTML to prevent XSS attacks
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Safe localStorage wrapper with quota handling
+        const SafeStorage = {
+            get(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    console.error('LocalStorage read failed:', e);
+                    return null;
+                }
+            },
+            set(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                    return true;
+                } catch (e) {
+                    if (e.name === 'QuotaExceededError') {
+                        alert('⚠️ Speicher voll! Bitte exportiere deine Daten und lösche alte Einträge.');
+                    } else {
+                        console.error('LocalStorage write failed:', e);
+                    }
+                    return false;
+                }
+            }
         };
 
         let state = {
-            points: JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)) || [],
+            points: JSON.parse(SafeStorage.get(CONFIG.STORAGE_KEY)) || [],
             map: null,
             markers: [],
             paths: [],
@@ -360,7 +407,7 @@
         function initMap() {
             state.map = L.map('map', { zoomControl: false, attributionControl: false, tap: true }).setView([35.6762, 139.6503], 6);
             L.tileLayer(`https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${CONFIG.STADIA_KEY}`).addTo(state.map);
-            state.map.on('click', e => {
+            state.map.on('click', async e => {
                 if(state.uiState.modal || state.uiState.sidebar) { 
                     state.uiState.sidebar = false;
                     state.uiState.modal = false;
@@ -371,6 +418,26 @@
                 state.tempCoords.start = [e.latlng.lat, e.latlng.lng];
                 setType('activity');
                 openModal();
+                
+                // Reverse geocoding: Get address from coordinates
+                const titleInput = document.getElementById('point-title');
+                titleInput.placeholder = 'Lädt Adresse...';
+                
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${e.latlng.lat}&lon=${e.latlng.lng}&format=json&zoom=18`,
+                        { headers: { 'User-Agent': 'TripViz-Japan/1.0' } }
+                    );
+                    const data = await res.json();
+                    if (data && data.display_name) {
+                        const address = data.display_name.split(',').slice(0, 2).join(', ');
+                        titleInput.value = escapeHtml(address.split(',')[0].trim());
+                    }
+                    titleInput.placeholder = 'z.B. Shibuya Crossing';
+                } catch (err) {
+                    console.error('Reverse geocoding failed:', err);
+                    titleInput.placeholder = `Ort bei ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`;
+                }
             });
         }
 
@@ -408,16 +475,29 @@
             if(q.length < 3) { container.classList.add('hidden'); return; }
             state.searchDebounce = setTimeout(async () => {
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=jp&limit=5`);
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=jp&limit=5`, {
+                        headers: {
+                            'User-Agent': 'TripViz-Japan/1.0'
+                        }
+                    });
                     const data = await res.json();
                     if(data.length === 0) { container.classList.add('hidden'); return; }
                     container.innerHTML = data.map(i => {
-                        const displayName = i.display_name.split(',').slice(0,2).join(',');
-                        return `<div class="p-4 cursor-pointer border-b border-white/5 text-sm active:bg-white/10" onclick="selectLoc('${target}', '${displayName.replace(/'/g, "")}', ${i.lat}, ${i.lon})">${displayName}</div>`;
+                        const displayName = escapeHtml(i.display_name.split(',').slice(0,2).join(','));
+                        return `<div class="p-4 cursor-pointer border-b border-white/5 text-sm active:bg-white/10" data-name="${displayName}" data-lat="${i.lat}" data-lon="${i.lon}">${displayName}</div>`;
                     }).join('');
+                    
+                    // Add click handlers safely
+                    container.querySelectorAll('div').forEach(div => {
+                        div.onclick = () => selectLoc(target, div.dataset.name, parseFloat(div.dataset.lat), parseFloat(div.dataset.lon));
+                    });
+                    
                     container.classList.remove('hidden');
-                } catch(err) { console.error(err); }
-            }, 500);
+                } catch(err) { 
+                    console.error('Search failed:', err);
+                    container.innerHTML = '<div class="p-4 text-center text-red-400 text-sm">Suche fehlgeschlagen</div>';
+                }
+            }, CONFIG.SEARCH_DEBOUNCE_MS);
         }
 
         window.selectLoc = (target, name, lat, lon) => {
@@ -443,16 +523,16 @@
                 type: state.currentType,
                 date: document.getElementById('point-date').value,
                 budget: parseFloat(document.getElementById('point-budget').value) || 0,
-                desc: document.getElementById('point-desc').value,
+                desc: escapeHtml(document.getElementById('point-desc').value.trim()),
                 coords: state.tempCoords.start,
                 endCoords: state.tempCoords.end
             };
             if(state.currentType === 'activity') {
-                data.title = document.getElementById('point-title').value || "Unbenannter Ort";
+                data.title = escapeHtml(document.getElementById('point-title').value.trim()) || "Unbenannter Ort";
             } else {
                 const method = document.getElementById('transport-method').value;
-                const start = document.getElementById('transport-start').value || "Start";
-                const end = document.getElementById('transport-end').value || "Ziel";
+                const start = escapeHtml(document.getElementById('transport-start').value.trim()) || "Start";
+                const end = escapeHtml(document.getElementById('transport-end').value.trim()) || "Ziel";
                 data.title = `${method}: ${start} → ${end}`;
             }
             if(state.editingId) { state.points = state.points.map(p => p.id === state.editingId ? data : p); }
@@ -461,8 +541,61 @@
         }
 
         function deleteEntry() { state.points = state.points.filter(p => p.id !== state.editingId); syncAndSave(); closeModal(); }
-        function syncAndSave() { localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state.points)); updateUI(); }
-        function updateUI() { renderList(); updateFilter(); renderMap(); }
+        function syncAndSave() { SafeStorage.set(CONFIG.STORAGE_KEY, JSON.stringify(state.points)); updateUI(); }
+        
+        // Export/Import Functions
+        function exportData() {
+            try {
+                const data = {
+                    version: 1,
+                    exportDate: new Date().toISOString(),
+                    points: state.points
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tripviz-backup-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('✅ Export erfolgreich');
+            } catch (error) {
+                console.error('Export failed:', error);
+                alert('Export fehlgeschlagen: ' + error.message);
+            }
+        }
+        
+        function importData(file) {
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!data.points || !Array.isArray(data.points)) {
+                        throw new Error('Ungültiges Dateiformat');
+                    }
+                    
+                    if (confirm(`${data.points.length} Einträge importieren?\n\n⚠️ Bestehende Daten werden überschrieben!`)) {
+                        state.points = data.points;
+                        syncAndSave();
+                        alert(`✅ ${data.points.length} Einträge erfolgreich importiert!`);
+                    }
+                } catch (error) {
+                    console.error('Import failed:', error);
+                    alert('Import fehlgeschlagen: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Make export available globally
+        window.exportTripData = exportData;
+        
+function updateUI() { renderList(); updateFilter(); renderMap(); }
 
         function updateFilter() {
             const dates = [...new Set(state.points.map(p => p.date))].sort();
