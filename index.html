@@ -1207,6 +1207,13 @@
         
         <!-- Share & Export Controls -->
         <div class="px-6 pb-6 border-t border-white/5 pt-4">
+
+            <!-- NEU: Collaborative Button -->
+         <button onclick="showCollaborativeModal()" class="w-full py-3 px-4 mb-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 text-purple-400 text-xs font-bold rounded-xl border border-purple-500/20 transition-all active:scale-95 flex items-center justify-center gap-2">
+        <span>👥</span>
+        <span>Zusammen planen</span>
+        <span id="online-indicator" style="display: none; font-size: 10px;"></span>
+            </button>
             <button onclick="openShareMenu()" class="w-full py-3 px-4 mb-3 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-cyan-400 text-xs font-bold rounded-xl border border-cyan-500/20 transition-all active:scale-95 flex items-center justify-center gap-2">
                 <span>🔗</span>
                 <span>Reise teilen</span>
@@ -1423,6 +1430,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <!-- QRCode.js for QR generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- html2canvas for image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
         const CONFIG = {
@@ -2342,46 +2351,69 @@
         };
 
         async function saveEntry() {
-            const data = {
-                id: state.editingId || Date.now(),
-                type: state.currentType,
-                date: document.getElementById('point-date').value,
-                time: document.getElementById('point-time').value || '',
-                budget: parseFloat(document.getElementById('point-budget-jpy').value) || 0,
-                budgetEur: parseFloat(document.getElementById('point-budget-eur').value) || 0,
-                desc: escapeHtml(document.getElementById('point-desc').value.trim()),
-                coords: state.tempCoords.start,
-                endCoords: state.tempCoords.end
-            };
-            if(state.currentType === 'activity') {
-                data.title = escapeHtml(document.getElementById('point-title').value.trim()) || "Unbenannter Ort";
-                data.category = document.getElementById('point-category').value || '';
-                data.mustSee = document.getElementById('point-must-see').checked;
-            } else {
-                const method = document.getElementById('transport-method').value;
-                const start = escapeHtml(document.getElementById('transport-start').value.trim()) || "Start";
-                const end = escapeHtml(document.getElementById('transport-end').value.trim()) || "Ziel";
-                data.title = `${method}: ${start} → ${end}`;
-            }
-            if(state.editingId) { state.points = state.points.map(p => p.id === state.editingId ? data : p); }
-            else { state.points.push(data); }
-            
-            await syncAndSave();
-            
-            // Save images for activities
-            if (state.currentType === 'activity' && state.currentImages.length > 0) {
-                for (const img of state.currentImages) {
-                    if (img.temp && img.file) {
-                        try {
-                            await storage.db.addImage(data.id, img.file);
-                        } catch (error) {
-                            console.error('Image save failed:', error);
+            try {
+                const data = {
+                    id: state.editingId || Date.now(),
+                    type: state.currentType,
+                    date: document.getElementById('point-date').value,
+                    time: document.getElementById('point-time').value || '',
+                    budget: parseFloat(document.getElementById('point-budget-jpy').value) || 0,
+                    budgetEur: parseFloat(document.getElementById('point-budget-eur').value) || 0,
+                    desc: escapeHtml(document.getElementById('point-desc').value.trim()),
+                    coords: state.tempCoords.start,
+                    endCoords: state.tempCoords.end
+                };
+                
+                if(state.currentType === 'activity') {
+                    data.title = escapeHtml(document.getElementById('point-title').value.trim()) || "Unbenannter Ort";
+                    data.category = document.getElementById('point-category').value || '';
+                    data.mustSee = document.getElementById('point-must-see').checked;
+                } else {
+                    const method = document.getElementById('transport-method').value;
+                    const start = escapeHtml(document.getElementById('transport-start').value.trim()) || "Start";
+                    const end = escapeHtml(document.getElementById('transport-end').value.trim()) || "Ziel";
+                    data.title = `${method}: ${start} → ${end}`;
+                }
+                
+                if(state.editingId) { 
+                    state.points = state.points.map(p => p.id === state.editingId ? data : p);
+                    
+                    // Update in Firebase
+                    if (window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                        const point = state.points.find(p => p.id === state.editingId);
+                        if (point) {
+                            await updatePointInFirebase(point);
+                        }
+                    }
+                } else { 
+                    state.points.push(data);
+                    
+                    // Add to Firebase
+                    if (window.isFirebaseEnabled && window.isFirebaseEnabled()) {
+                        await addPointToFirebase(data);
+                    }
+                }
+                
+                await syncAndSave();
+                
+                // Save images for activities
+                if (state.currentType === 'activity' && state.currentImages.length > 0) {
+                    for (const img of state.currentImages) {
+                        if (img.temp && img.file) {
+                            try {
+                                await storage.db.addImage(data.id, img.file);
+                            } catch (error) {
+                                console.error('Image save failed:', error);
+                            }
                         }
                     }
                 }
+                
+                closeModal();
+            } catch (error) {
+                console.error('Error saving entry:', error);
+                alert('❌ Fehler beim Speichern: ' + error.message);
             }
-            
-            closeModal();
         }
 
         function deleteEntry() { state.points = state.points.filter(p => p.id !== state.editingId); syncAndSave(); closeModal(); }
@@ -3133,7 +3165,7 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
                     // Set explicit height to ensure background covers everything
                     popup.style.minHeight = `${totalHeight}px`;
                     
-                   
+                    console.log(`📏 Popup dynamic height: ${totalHeight}px (content: ${contentHeight}px)`);
                 }
             });
             
@@ -3199,6 +3231,10 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
         function deletePointFromPopup(pointId) {
             if (confirm('Diesen Punkt wirklich löschen?')) {
                 state.points = state.points.filter(p => p.id !== pointId);
+        // NEU: Delete from Firebase
+            if (window.isFirebaseEnabled() && point && point.firebaseId) {
+            deletePointFromFirebase(point.firebaseId);
+    }
                 syncAndSave();
                 hideMarkerPopup();
             }
@@ -3339,19 +3375,190 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
         }
 
         async function downloadAsImage() {
-            // Simple approach: Open in new tab (browser will handle download)
             try {
                 const btn = event.target.closest('button');
                 const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<span style="font-size: 20px;">⏳</span><span>Wird vorbereitet...</span>';
+                btn.innerHTML = '<span style="font-size: 20px;">⏳</span><span>Wird erstellt...</span>';
+                btn.disabled = true;
                 
-                // Create a simple text export as image alternative
-                alert('📸 Screenshot-Tipp:\n\n1. Drücke Print Screen (PrtScn)\n2. Öffne Paint/Snipping Tool\n3. Füge ein (Ctrl+V)\n4. Speichere das Bild\n\nOder nutze Windows+Shift+S für Snipping Tool!');
+                // Close share modal temporarily
+                closeShareMenu();
                 
-                btn.innerHTML = originalHTML;
+                // Wait a bit for modal to close
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Create export container
+                const exportContainer = document.createElement('div');
+                exportContainer.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 1200px;
+                    background: var(--panel-bg);
+                    padding: 40px;
+                    z-index: -9999;
+                    font-family: system-ui, -apple-system, sans-serif;
+                `;
+                
+                // Get trip stats
+                const totalPoints = state.points.length;
+                const totalBudget = state.points.reduce((sum, p) => sum + p.budget, 0);
+                const days = [...new Set(state.points.map(p => p.date))].length;
+                const mustSeeCount = state.points.filter(p => p.mustSee).length;
+                
+                // Group by date
+                const grouped = state.points.reduce((acc, p) => { 
+                    if(!acc[p.date]) acc[p.date] = []; 
+                    acc[p.date].push(p); 
+                    return acc; 
+                }, {});
+                
+                // Build HTML for export
+                let html = `
+                    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 24px; padding: 48px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                        <!-- Header -->
+                        <div style="text-align: center; margin-bottom: 48px;">
+                            <h1 style="font-size: 48px; font-weight: 900; background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 16px 0;">
+                                🗺️ Meine Japan Reise
+                            </h1>
+                            <div style="display: flex; gap: 32px; justify-content: center; margin-top: 24px;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 32px; font-weight: 900; color: #06b6d4;">${totalPoints}</div>
+                                    <div style="font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 600;">AKTIVITÄTEN</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 32px; font-weight: 900; color: #06b6d4;">¥${totalBudget.toLocaleString()}</div>
+                                    <div style="font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 600;">GESAMT</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 32px; font-weight: 900; color: #06b6d4;">${days}</div>
+                                    <div style="font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 600;">TAGE</div>
+                                </div>
+                                ${mustSeeCount > 0 ? `
+                                <div style="text-align: center;">
+                                    <div style="font-size: 32px; font-weight: 900; color: #ffd700;">🐭${mustSeeCount}</div>
+                                    <div style="font-size: 14px; color: rgba(255,255,255,0.5); font-weight: 600;">MUST-SEE</div>
+                                </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <!-- Activities by Day -->
+                        <div style="display: grid; gap: 32px;">
+                `;
+                
+                // Add each day
+                Object.keys(grouped).sort().forEach((date, dayIndex) => {
+                    const dayPoints = grouped[date];
+                    const daySum = dayPoints.reduce((s, p) => s + p.budget, 0);
+                    const dayLabel = new Date(date).toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long'});
+                    
+                    html += `
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid rgba(6, 182, 212, 0.3);">
+                                <h3 style="font-size: 20px; font-weight: 900; color: #06b6d4; margin: 0; text-transform: uppercase; letter-spacing: 1px;">
+                                    📅 ${dayLabel}
+                                </h3>
+                                <div style="font-size: 18px; font-weight: 900; color: rgba(255,255,255,0.9);">
+                                    ¥${daySum.toLocaleString()}
+                                </div>
+                            </div>
+                            <div style="display: grid; gap: 12px;">
+                    `;
+                    
+                    // Add points for this day
+                    dayPoints.forEach(p => {
+                        const icon = getCategoryEmoji(p.category || '');
+                        const mustSeeBadge = p.mustSee ? '<span style="background: rgba(255, 215, 0, 0.2); border: 1px solid rgba(255, 215, 0, 0.3); padding: 2px 8px; border-radius: 6px; font-size: 14px; margin-left: 8px;">🐭</span>' : '';
+                        
+                        html += `
+                            <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 16px;">
+                                <div style="font-size: 32px; flex-shrink: 0;">${icon}</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                        ${p.time ? `<span style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.4);">${p.time}</span>` : ''}
+                                        <span style="font-size: 16px; font-weight: 900; color: rgba(255,255,255,0.95);">${escapeHtml(p.title)}</span>
+                                        ${mustSeeBadge}
+                                    </div>
+                                    ${p.desc ? `<div style="font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.4;">${escapeHtml(p.desc).substring(0, 100)}${p.desc.length > 100 ? '...' : ''}</div>` : ''}
+                                </div>
+                                <div style="text-align: right; flex-shrink: 0;">
+                                    <div style="font-size: 18px; font-weight: 900; color: #06b6d4;">¥${p.budget.toLocaleString()}</div>
+                                    ${p.budgetEur ? `<div style="font-size: 12px; color: rgba(255,255,255,0.4);">€${p.budgetEur.toFixed(2)}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Footer
+                html += `
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div style="margin-top: 48px; text-align: center; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.4); font-weight: 600;">
+                                Erstellt mit TripViz 🗺️
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                exportContainer.innerHTML = html;
+                document.body.appendChild(exportContainer);
+                
+                // Wait for fonts and styles to load
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Capture screenshot
+                const canvas = await html2canvas(exportContainer, {
+                    backgroundColor: '#0f172a',
+                    scale: 2, // Higher quality
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                });
+                
+                // Remove temp container
+                document.body.removeChild(exportContainer);
+                
+                // Convert to blob and download
+                canvas.toBlob(async (blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `japan-reise-${new Date().toISOString().split('T')[0]}.png`;
+                    link.href = url;
+                    link.click();
+                    
+                    // Cleanup
+                    setTimeout(() => URL.revokeObjectURL(url), 100);
+                    
+                    // Re-open share modal with success message
+                    openShareMenu();
+                    btn.innerHTML = '<span style="font-size: 20px;">✅</span><span>Bild heruntergeladen!</span>';
+                    btn.style.background = 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2))';
+                    btn.disabled = false;
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.style.background = '';
+                    }, 3000);
+                });
                 
             } catch (err) {
                 console.error('Screenshot error:', err);
+                alert('❌ Fehler beim Erstellen des Bildes. Bitte versuche es nochmal.');
+                
+                // Re-open modal
+                openShareMenu();
+                const btn = event.target.closest('button');
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
             }
         }
 
@@ -3401,5 +3608,9 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
         window.downloadAsImage = downloadAsImage;
 
     </script>
+    <!-- Firebase Collaborative Module -->
+    <script src="firebase-collaborative.js"></script>
+    
+
 </body>
 </html>
