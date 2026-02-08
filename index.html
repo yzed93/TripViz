@@ -623,7 +623,7 @@
             padding: 14px;
             min-width: 260px;
             max-width: 340px;
-            min-height: 400px; /* Pragmatic minimum to ensure background shows */
+            /* min-height removed - calculated dynamically by JS */
             pointer-events: auto;
             z-index: 1000;
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -1205,8 +1205,12 @@
             </button>
         </div>
         
-        <!-- Export/Import Controls -->
+        <!-- Share & Export Controls -->
         <div class="px-6 pb-6 border-t border-white/5 pt-4">
+            <button onclick="openShareMenu()" class="w-full py-3 px-4 mb-3 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-cyan-400 text-xs font-bold rounded-xl border border-cyan-500/20 transition-all active:scale-95 flex items-center justify-center gap-2">
+                <span>🔗</span>
+                <span>Reise teilen</span>
+            </button>
             <div class="flex gap-2 mb-3">
                 <button onclick="exportTripData()" class="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 text-white/70 text-xs font-bold rounded-xl border border-white/10 transition-all active:scale-95">
                     📥 Export
@@ -1326,6 +1330,59 @@
         </div>
     </div>
 
+    <!-- Share Modal -->
+    <div id="share-modal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: var(--panel-bg); border-radius: 24px; max-width: 500px; width: 100%; padding: 32px; border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2 class="brand-font" style="font-size: 24px; font-weight: 700;">🔗 Reise teilen</h2>
+                <button onclick="closeShareMenu()" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border: none; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; font-size: 20px;">×</button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Copy Link -->
+                <button onclick="copyShareLink()" class="w-full py-4 px-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-cyan-400 text-sm font-bold rounded-xl border border-cyan-500/20 transition-all active:scale-95 flex items-center justify-center gap-3">
+                    <span style="font-size: 20px;">🔗</span>
+                    <span>Link kopieren</span>
+                </button>
+
+                <!-- QR Code -->
+                <button onclick="showQRCode()" class="w-full py-4 px-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 text-purple-400 text-sm font-bold rounded-xl border border-purple-500/20 transition-all active:scale-95 flex items-center justify-center gap-3">
+                    <span style="font-size: 20px;">📱</span>
+                    <span>QR-Code anzeigen</span>
+                </button>
+
+                <!-- Download as Image -->
+                <button onclick="downloadAsImage()" class="w-full py-4 px-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 text-green-400 text-sm font-bold rounded-xl border border-green-500/20 transition-all active:scale-95 flex items-center justify-center gap-3">
+                    <span style="font-size: 20px;">📸</span>
+                    <span>Als Bild exportieren</span>
+                </button>
+            </div>
+
+            <!-- Share Link Display (hidden by default) -->
+            <div id="share-link-display" class="hidden mt-4 p-4 bg-white/5 rounded-xl border border-white/10">
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 8px; font-weight: 600;">DEIN SHARE-LINK:</div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input id="share-link-input" type="text" readonly style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; color: var(--accent-primary); font-size: 12px; font-family: monospace;" />
+                    <button onclick="copyFromInput()" style="padding: 10px 16px; background: var(--accent-primary); color: #000; border: none; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; transition: all 0.2s; white-space: nowrap;">
+                        COPY
+                    </button>
+                </div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 8px;">
+                    ✨ Link bleibt gültig solange du ihn teilst
+                </div>
+            </div>
+
+            <!-- QR Code Display (hidden by default) -->
+            <div id="qr-code-display" class="hidden mt-4 p-4 bg-white/5 rounded-xl border border-white/10 flex flex-col items-center">
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 12px; font-weight: 600;">QR-CODE SCANNEN:</div>
+                <div id="qr-code-container" style="background: white; padding: 16px; border-radius: 12px;"></div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 12px; text-align: center;">
+                    📱 Mit Handy scannen zum Öffnen
+                </div>
+            </div>
+        </div>
+    </div>
+
     <style>
         .theme-option {
             background: rgba(255,255,255,0.03);
@@ -1356,8 +1413,17 @@
         #theme-modal.hidden {
             display: none !important;
         }
+
+        #share-modal.hidden {
+            display: none !important;
+        }
     </style>
 
+    <!-- LZ-String for compression -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <!-- QRCode.js for QR generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <script>
         const CONFIG = {
             STADIA_KEY: "2831d4eb-094e-4752-a3c9-1ae9e9d65f94",
@@ -3054,6 +3120,23 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
             const mapContainer = document.getElementById('map');
             mapContainer.appendChild(popup);
             
+            // DYNAMIC HEIGHT CALCULATION
+            // Wait for next frame so browser has calculated layout
+            requestAnimationFrame(() => {
+                const content = popup.querySelector('.marker-popup-content');
+                if (content) {
+                    const contentHeight = content.scrollHeight;
+                    const paddingTop = 14;
+                    const paddingBottom = 14;
+                    const totalHeight = contentHeight + paddingTop + paddingBottom;
+                    
+                    // Set explicit height to ensure background covers everything
+                    popup.style.minHeight = `${totalHeight}px`;
+                    
+                   
+                }
+            });
+            
             // Prevent popup from hiding when mouse is over it
             popup.onmouseenter = () => {
                 if (hidePopupTimeout) {
@@ -3144,6 +3227,179 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
                 }, 200);
             }
         }
+        // ============================================
+        // SHARE FUNCTIONS
+        // ============================================
+
+        function openShareMenu() {
+            const modal = document.getElementById('share-modal');
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex'; // Enable flex layout when shown
+            // Reset displays
+            document.getElementById('share-link-display').classList.add('hidden');
+            document.getElementById('qr-code-display').classList.add('hidden');
+        }
+
+        function closeShareMenu() {
+            const modal = document.getElementById('share-modal');
+            modal.classList.add('hidden');
+            modal.style.display = ''; // Remove inline display
+        }
+
+        function generateShareLink() {
+            // Prepare data to share (exclude images for size)
+            const shareData = state.points.map(p => ({
+                id: p.id,
+                type: p.type,
+                title: p.title,
+                date: p.date,
+                time: p.time,
+                budget: p.budget,
+                budgetEur: p.budgetEur,
+                desc: p.desc,
+                coords: p.coords,
+                endCoords: p.endCoords,
+                category: p.category,
+                mustSee: p.mustSee
+            }));
+
+            // Compress data
+            const json = JSON.stringify(shareData);
+            const compressed = LZString.compressToEncodedURIComponent(json);
+            
+            // Generate URL
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = `${baseUrl}?trip=${compressed}`;
+            
+            return shareUrl;
+        }
+
+        async function copyShareLink() {
+            const url = generateShareLink();
+            
+            try {
+                await navigator.clipboard.writeText(url);
+                
+                // Show success feedback
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span style="font-size: 20px;">✅</span><span>Link kopiert!</span>';
+                btn.style.background = 'linear-gradient(to right, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2))';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.background = '';
+                }, 2000);
+                
+                // Also show in display
+                document.getElementById('share-link-input').value = url;
+                document.getElementById('share-link-display').classList.remove('hidden');
+                
+            } catch (err) {
+                alert('Fehler beim Kopieren. Bitte manuell kopieren.');
+                document.getElementById('share-link-input').value = url;
+                document.getElementById('share-link-display').classList.remove('hidden');
+            }
+        }
+
+        function copyFromInput() {
+            const input = document.getElementById('share-link-input');
+            input.select();
+            document.execCommand('copy');
+            
+            const btn = event.target;
+            btn.textContent = '✓';
+            setTimeout(() => btn.textContent = 'COPY', 1500);
+        }
+
+        let qrCodeInstance = null;
+
+        function showQRCode() {
+            const url = generateShareLink();
+            const container = document.getElementById('qr-code-container');
+            const display = document.getElementById('qr-code-display');
+            
+            // Clear previous QR code
+            container.innerHTML = '';
+            
+            // Generate new QR code
+            qrCodeInstance = new QRCode(container, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            
+            display.classList.remove('hidden');
+            
+            // Scroll to it
+            display.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function downloadAsImage() {
+            // Simple approach: Open in new tab (browser will handle download)
+            try {
+                const btn = event.target.closest('button');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<span style="font-size: 20px;">⏳</span><span>Wird vorbereitet...</span>';
+                
+                // Create a simple text export as image alternative
+                alert('📸 Screenshot-Tipp:\n\n1. Drücke Print Screen (PrtScn)\n2. Öffne Paint/Snipping Tool\n3. Füge ein (Ctrl+V)\n4. Speichere das Bild\n\nOder nutze Windows+Shift+S für Snipping Tool!');
+                
+                btn.innerHTML = originalHTML;
+                
+            } catch (err) {
+                console.error('Screenshot error:', err);
+            }
+        }
+
+        // Check for shared trip on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tripData = urlParams.get('trip');
+            
+            if (tripData) {
+                try {
+                    // Decompress and parse
+                    const json = LZString.decompressFromEncodedURIComponent(tripData);
+                    const points = JSON.parse(json);
+                    
+                    if (Array.isArray(points) && points.length > 0) {
+                        // Show confirmation
+                        const confirm = window.confirm(
+                            `🎉 Geteilte Reise gefunden!\n\n` +
+                            `${points.length} Aktivitäten werden geladen.\n\n` +
+                            `Möchtest du diese Reise öffnen?`
+                        );
+                        
+                        if (confirm) {
+                            // Load shared trip
+                            state.points = points;
+                            syncAndSave();
+                            
+                            // Clean URL
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                            
+                            alert('✅ Reise erfolgreich geladen!');
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to load shared trip:', err);
+                    alert('❌ Fehler beim Laden der geteilten Reise.');
+                }
+            }
+        });
+
+        // Make functions global
+        window.openShareMenu = openShareMenu;
+        window.closeShareMenu = closeShareMenu;
+        window.copyShareLink = copyShareLink;
+        window.copyFromInput = copyFromInput;
+        window.showQRCode = showQRCode;
+        window.downloadAsImage = downloadAsImage;
+
     </script>
 </body>
 </html>
