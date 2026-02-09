@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-
     <title>TripViz - Japan Reiseplaner</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS -->
@@ -995,7 +995,7 @@
     <div class="top-header-bar">
         <div class="header-glass px-3 py-2 flex items-center gap-2 hidden sm:flex">
             <div class="w-7 h-7 bg-cyan-400 rounded-lg flex items-center justify-center text-black">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2z"/><circle cx="12" cy="10" r="3"/></svg>
+                <img src="favicon.ico" alt="TripViz" style="width: 20px; height: 20px; image-rendering: crisp-edges;">
             </div>
             <span class="brand-font font-bold text-sm tracking-tight hidden lg:block">TripViz</span>
         </div>
@@ -3620,16 +3620,15 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
 
     // SCHRITT 1: Firebase Config einfügen
     // Ersetze die Werte mit deinen eigenen aus der Firebase Console!
-const firebaseConfig = {
-  apiKey: "AIzaSyDW6WRwLe1V7oEj5B708aDcKDukaXEF5Xs",
-  authDomain: "tripviz.firebaseapp.com",
-  databaseURL: "https://tripviz-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "tripviz",
-  storageBucket: "tripviz.firebasestorage.app",
-  messagingSenderId: "964198243405",
-  appId: "1:964198243405:web:d8bb2be98649957b811004",
-  measurementId: "G-DN8V1VCQG0"
-};
+    const firebaseConfig = {
+        apiKey: "DEIN_API_KEY_HIER",
+        authDomain: "DEIN_PROJECT.firebaseapp.com",
+        databaseURL: "https://DEIN_PROJECT-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "DEIN_PROJECT",
+        storageBucket: "DEIN_PROJECT.appspot.com",
+        messagingSenderId: "DEINE_SENDER_ID",
+        appId: "DEINE_APP_ID"
+    };
 
     // Firebase State
     let firebaseApp = null;
@@ -4025,5 +4024,3 @@ const firebaseConfig = {
 
 </body>
 </html>
-
-
