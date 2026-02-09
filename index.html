@@ -1669,7 +1669,7 @@
             <span>📖</span>
             <span>Tour neu starten</span>
         </button>
-        <button onclick="window.open('https://github.com/yzed93/tripviz', '_blank'); toggleHelpMenu();">
+        <button onclick="window.open('https://github.com/yourusername/tripviz', '_blank'); toggleHelpMenu();">
             <span>📚</span>
             <span>Dokumentation</span>
         </button>
@@ -1695,11 +1695,8 @@
             </div>
             
             <div id="trip-id-section" style="display: none; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Deine Trip-ID:</p>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <code id="trip-id-display" style="flex: 1; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; color: var(--accent-primary);"></code>
-                    <button onclick="copyTripId()" style="padding: 12px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; cursor: pointer; color: white;">📋</button>
-                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Deine Trip-ID (bitte kopieren und teilen):</p>
+                <code id="trip-id-display" style="display: block; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; font-family: monospace; color: var(--accent-primary); font-size: 14px; user-select: all; cursor: text;"></code>
             </div>
             
             <div id="join-section">
@@ -1722,15 +1719,6 @@
             document.getElementById('collaborative-modal').style.display = 'none';
         }
         
-        function copyTripId() {
-            const tripId = document.getElementById('trip-id-display').textContent;
-            navigator.clipboard.writeText(tripId).then(() => {
-                alert('📋 Trip-ID kopiert!');
-            }).catch(() => {
-                alert('❌ Kopieren fehlgeschlagen');
-            });
-        }
-        
         // These will be overwritten by firebase-collaborative.js
         window.createCollaborativeTrip = function() {
             console.log('Waiting for Firebase to load...');
@@ -1745,16 +1733,10 @@
         // Export functions
         window.showCollaborativeModal = showCollaborativeModal;
         window.closeCollaborativeModal = closeCollaborativeModal;
-        window.copyTripId = copyTripId;
         
         console.log('✅ Collaborative UI loaded');
     </script>
-        window.showCollaborativeModal = showCollaborativeModal;
-        window.closeCollaborativeModal = closeCollaborativeModal;
-        window.copyTripId = copyTripId;
-        window.createCollaborativeTrip = createCollaborativeTrip;
-        window.joinCollaborativeTrip = joinCollaborativeTrip;
-    </script>
+
 
 
     <div id="map"></div>
@@ -4755,4 +4737,3 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
 
 </body>
 </html>
-
