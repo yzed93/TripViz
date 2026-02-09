@@ -34,7 +34,14 @@ async function initFirebase() {
         // Initialize Firebase
         firebaseApp = initializeApp(firebaseConfig);
         firebaseDB = getDatabase(firebaseApp);
-        
+
+      // In der initFirebase() Funktion:
+const { getAuth, signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+const auth = getAuth(firebaseApp);
+
+// Sign in anonymously
+await signInAnonymously(auth);
+console.log('✅ Authenticated');
         console.log('✅ Firebase initialized');
         return { getDatabase, ref, onValue, set, push, remove, update, onDisconnect };
     } catch (error) {
