@@ -22,6 +22,44 @@ let currentTripId = null;
 let isFirebaseEnabled = false;
 
 // ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Remove undefined and null values from object
+ * Firebase doesn't accept undefined values
+ */
+function cleanForFirebase(obj) {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    const cleaned = {};
+    
+    for (const key in obj) {
+        const value = obj[key];
+        
+        // Skip undefined and null
+        if (value === undefined || value === null) {
+            continue;
+        }
+        
+        // Handle arrays
+        if (Array.isArray(value)) {
+            cleaned[key] = value.filter(item => item !== undefined && item !== null);
+        }
+        // Handle nested objects
+        else if (typeof value === 'object') {
+            cleaned[key] = cleanForFirebase(value);
+        }
+        // Handle primitives
+        else {
+            cleaned[key] = value;
+        }
+    }
+    
+    return cleaned;
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
@@ -30,19 +68,17 @@ async function initFirebase() {
         // Import Firebase modules from CDN
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
         const { getDatabase, ref, onValue, set, push, remove, update, onDisconnect } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+        const { getAuth, signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
         
         // Initialize Firebase
         firebaseApp = initializeApp(firebaseConfig);
         firebaseDB = getDatabase(firebaseApp);
+        const auth = getAuth(firebaseApp);
 
-      // In der initFirebase() Funktion:
-const { getAuth, signInAnonymously } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-const auth = getAuth(firebaseApp);
-
-// Sign in anonymously
-await signInAnonymously(auth);
-console.log('✅ Authenticated');
-        console.log('✅ Firebase initialized');
+        // Sign in anonymously
+        await signInAnonymously(auth);
+        console.log('✅ Firebase authenticated');
+        
         return { getDatabase, ref, onValue, set, push, remove, update, onDisconnect };
     } catch (error) {
         console.error('❌ Firebase init error:', error);
@@ -81,10 +117,12 @@ async function startCollaborativeSession(tripId) {
         const pointsObject = {};
         state.points.forEach(point => {
             const firebaseId = point.firebaseId || `point_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            pointsObject[firebaseId] = {
+            
+            // ✅ FIX: Clean point object - remove undefined values
+            pointsObject[firebaseId] = cleanForFirebase({
                 ...point,
                 firebaseId
-            };
+            });
         });
         await set(tripRef, pointsObject);
     }
@@ -151,11 +189,12 @@ async function addPointToFirebase(point) {
     const firebaseId = `point_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const pointRef = ref(db, `trips/${currentTripId}/points/${firebaseId}`);
     
-    await set(pointRef, {
+    // ✅ FIX: Clean point before saving
+    await set(pointRef, cleanForFirebase({
         ...point,
         firebaseId,
         createdAt: Date.now()
-    });
+    }));
 }
 
 async function updatePointInFirebase(point) {
@@ -166,10 +205,11 @@ async function updatePointInFirebase(point) {
     
     const pointRef = ref(db, `trips/${currentTripId}/points/${point.firebaseId}`);
     
-    await update(pointRef, {
+    // ✅ FIX: Clean point before updating
+    await update(pointRef, cleanForFirebase({
         ...point,
         updatedAt: Date.now()
-    });
+    }));
 }
 
 async function deletePointFromFirebase(firebaseId) {
@@ -187,14 +227,14 @@ async function deletePointFromFirebase(firebaseId) {
 // ============================================
 
 function generateTripId() {
-    return `trip_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return 'trip_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
 function getUserId() {
-    let userId = localStorage.getItem('tripviz_user_id');
+    let userId = localStorage.getItem('tripviz-user-id');
     if (!userId) {
-        userId = `user_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('tripviz_user_id', userId);
+        userId = 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('tripviz-user-id', userId);
     }
     return userId;
 }
@@ -203,12 +243,15 @@ function updateOnlineUsers(users) {
     const userCount = Object.keys(users).length;
     console.log(`👥 ${userCount} user(s) online`);
     
-    // Update UI
-    const indicator = document.getElementById('online-indicator');
-    if (indicator) {
-        indicator.textContent = `👥 ${userCount} online`;
-        indicator.style.display = userCount > 1 ? 'block' : 'none';
-    }
+    // Update all indicators (desktop and mobile)
+    const indicators = ['online-indicator', 'online-indicator-desktop', 'online-indicator-mobile'];
+    indicators.forEach(id => {
+        const indicator = document.getElementById(id);
+        if (indicator) {
+            indicator.textContent = `👥 ${userCount}`;
+            indicator.style.display = userCount > 1 ? 'inline-block' : 'none';
+        }
+    });
 }
 
 // ============================================
@@ -216,227 +259,59 @@ function updateOnlineUsers(users) {
 // ============================================
 
 function showCollaborativeModal() {
-    const modal = document.createElement('div');
-    modal.id = 'collaborative-modal';
-    modal.style.cssText = `
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.8);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    `;
-    
-    modal.innerHTML = `
-        <div style="background: var(--panel-bg); border-radius: 24px; max-width: 500px; width: 100%; padding: 32px; border: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h2 class="brand-font" style="font-size: 24px; font-weight: 700;">👥 Zusammen planen</h2>
-                <button onclick="closeCollaborativeModal()" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border: none; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; font-size: 20px;">×</button>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                <button onclick="createCollaborativeTrip()" style="width: 100%; py-4 px-4 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 hover:from-cyan-500/20 hover:to-blue-500/20 text-cyan-400 text-sm font-bold rounded-xl border border-cyan-500/20 transition-all">
-                    🆕 Neue Collaborative Session starten
-                </button>
-                
-                <div style="text-align: center; color: rgba(255,255,255,0.4); font-size: 12px; font-weight: 600;">
-                    ODER
-                </div>
-                
-                <input 
-                    type="text" 
-                    id="join-trip-id" 
-                    placeholder="Trip-ID eingeben..." 
-                    style="width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: white; font-size: 14px;"
-                />
-                
-                <button onclick="joinCollaborativeTrip()" style="width: 100%; py-4 px-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20 text-purple-400 text-sm font-bold rounded-xl border border-purple-500/20 transition-all">
-                    🔗 Existierender Session beitreten
-                </button>
-            </div>
-            
-            <div id="collaborative-status" style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; display: none;">
-                <!-- Status wird hier angezeigt -->
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
+    document.getElementById('collaborative-modal').style.display = 'flex';
 }
 
 function closeCollaborativeModal() {
-    const modal = document.getElementById('collaborative-modal');
-    if (modal) modal.remove();
+    document.getElementById('collaborative-modal').style.display = 'none';
 }
 
 async function createCollaborativeTrip() {
     const tripId = await startCollaborativeSession();
     
     if (tripId) {
-        const status = document.getElementById('collaborative-status');
-        status.style.display = 'block';
-        status.innerHTML = `
-            <div style="color: var(--accent-primary); font-weight: 700; margin-bottom: 8px;">
-                ✅ Session erstellt!
-            </div>
-            <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 12px;">
-                Teile diese Trip-ID mit deinen Freunden:
-            </div>
-            <div style="display: flex; gap: 8px;">
-                <input 
-                    type="text" 
-                    value="${tripId}" 
-                    readonly 
-                    id="trip-id-display"
-                    style="flex: 1; padding: 10px 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--accent-primary); font-family: monospace; font-size: 12px;"
-                />
-                <button 
-                    onclick="copyTripId()" 
-                    style="padding: 10px 16px; background: var(--accent-primary); color: #000; border: none; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap;"
-                >
-                    COPY
-                </button>
-            </div>
-        `;
+        // Show Trip ID
+        document.getElementById('trip-id-display').textContent = tripId;
+        document.getElementById('trip-id-section').style.display = 'block';
+        document.getElementById('join-section').style.display = 'none';
         
-        // Update URL
-        window.history.pushState({}, '', `?collab=${tripId}`);
+        // Show success
+        alert('✅ Collaborative Session erstellt!\n\nTrip-ID: ' + tripId);
         
-        showNotification('✅ Collaborative Session gestartet!', 'success');
+        // Add to URL
+        const url = new URL(window.location);
+        url.searchParams.set('collab', tripId);
+        window.history.pushState({}, '', url);
     }
 }
 
 async function joinCollaborativeTrip() {
-    const input = document.getElementById('join-trip-id');
-    const tripId = input.value.trim();
+    const tripId = document.getElementById('join-trip-id').value.trim();
     
     if (!tripId) {
-        alert('Bitte Trip-ID eingeben!');
+        alert('❌ Bitte Trip-ID eingeben!');
         return;
     }
     
     await startCollaborativeSession(tripId);
     
-    const status = document.getElementById('collaborative-status');
-    status.style.display = 'block';
-    status.innerHTML = `
-        <div style="color: var(--accent-primary); font-weight: 700;">
-            ✅ Session beigetreten!
-        </div>
-        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 8px;">
-            Du kannst jetzt zusammen mit anderen planen.
-        </div>
-    `;
+    closeCollaborativeModal();
+    alert('✅ Collaborative Session beigetreten!');
     
-    // Update URL
-    window.history.pushState({}, '', `?collab=${tripId}`);
-    
-    showNotification('✅ Session beigetreten!', 'success');
-    
-    setTimeout(() => {
-        closeCollaborativeModal();
-    }, 2000);
-}
-
-function copyTripId() {
-    const element = document.getElementById('trip-id-display');
-    if (!element) {
-        alert('❌ Trip-ID nicht gefunden');
-        return;
-    }
-    
-    const tripId = element.textContent || element.innerText;
-    
-    if (!tripId || tripId.trim() === '') {
-        alert('❌ Keine Trip-ID vorhanden');
-        return;
-    }
-    
-    // Moderne Clipboard API
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(tripId)
-            .then(() => {
-                alert('📋 Trip-ID kopiert: ' + tripId);
-            })
-            .catch(err => {
-                console.error('Clipboard API failed:', err);
-                fallbackCopyToClipboard(tripId);
-            });
-    } else {
-        // Fallback für ältere Browser
-        fallbackCopyToClipboard(tripId);
-    }
-}
-
-// Fallback-Methode
-function fallbackCopyToClipboard(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-9999px';
-    textArea.style.top = '-9999px';
-    textArea.setAttribute('readonly', '');
-    document.body.appendChild(textArea);
-    
-    textArea.select();
-    textArea.setSelectionRange(0, 99999); // Für mobile Geräte
-    
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            alert('📋 Trip-ID kopiert: ' + text);
-        } else {
-            alert('❌ Kopieren fehlgeschlagen. Bitte manuell kopieren: ' + text);
-        }
-    } catch (err) {
-        console.error('Fallback copy failed:', err);
-        alert('❌ Kopieren fehlgeschlagen. Trip-ID: ' + text);
-    }
-    
-    document.body.removeChild(textArea);
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? 'rgba(34, 197, 94, 0.9)' : 'rgba(6, 182, 212, 0.9)'};
-        color: white;
-        padding: 16px 24px;
-        border-radius: 12px;
-        font-weight: bold;
-        font-size: 14px;
-        z-index: 10001;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    `;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transition = 'opacity 0.3s';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    // Add to URL
+    const url = new URL(window.location);
+    url.searchParams.set('collab', tripId);
+    window.history.pushState({}, '', url);
 }
 
 // ============================================
 // EXPORT FUNCTIONS
 // ============================================
 
-window.initFirebase = initFirebase;
-window.startCollaborativeSession = startCollaborativeSession;
-window.addPointToFirebase = addPointToFirebase;
-window.updatePointInFirebase = updatePointInFirebase;
-window.deletePointFromFirebase = deletePointFromFirebase;
 window.showCollaborativeModal = showCollaborativeModal;
 window.closeCollaborativeModal = closeCollaborativeModal;
 window.createCollaborativeTrip = createCollaborativeTrip;
 window.joinCollaborativeTrip = joinCollaborativeTrip;
-window.copyTripId = copyTripId;
 window.isFirebaseEnabled = () => isFirebaseEnabled;
 
 // Check for collaborative URL on load
@@ -448,7 +323,7 @@ window.addEventListener('DOMContentLoaded', () => {
         // Auto-join collaborative session
         setTimeout(() => {
             startCollaborativeSession(collabId);
-            showNotification('🔄 Collaborative Session wird geladen...', 'info');
+            alert('🔄 Collaborative Session wird geladen...');
         }, 1000);
     }
 });
