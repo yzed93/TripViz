@@ -1158,9 +1158,527 @@
             background: rgba(255,255,255,0.1);
             border-color: var(--accent-primary);
         }
+
+        /* ============================================ */
+        /* TUTORIAL SYSTEM STYLES */
+        /* ============================================ */
+
+        /* Welcome Modal */
+        .tutorial-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .tutorial-modal.hidden {
+            display: none;
+        }
+
+        .tutorial-content {
+            background: var(--panel-bg);
+            border-radius: 24px;
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            backdrop-filter: blur(20px);
+        }
+
+        .tutorial-header h1 {
+            font-size: 32px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 12px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tutorial-header p {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .tutorial-features {
+            display: grid;
+            gap: 12px;
+            margin: 32px 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.2s;
+        }
+
+        .feature-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--accent-primary);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-card);
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .tutorial-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-tutorial-primary {
+            flex: 1;
+            padding: 16px 24px;
+            background: var(--gradient-primary);
+            color: var(--text-on-accent);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-tutorial-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-tutorial-secondary {
+            flex: 1;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-tutorial-secondary:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .tutorial-checkbox {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Spotlight Tour */
+        #spotlight-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        #spotlight-overlay.hidden {
+            display: none;
+        }
+
+        /* Spotlight backdrop removed - using 4 panels instead */
+        
+        #spotlight-highlight {
+            position: fixed;
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 10002;
+            transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+            
+            /* Glowing border effect */
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.8),
+                        0 0 20px rgba(6, 182, 212, 0.6),
+                        0 0 40px rgba(6, 182, 212, 0.4);
+        }
+        
+        /* Four panels to create cutout effect */
+        .spotlight-panel {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10001;
+            pointer-events: auto;
+            transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        
+        #spotlight-panel-top {
+            top: 0;
+            left: 0;
+            right: 0;
+            /* Height set by JS */
+        }
+        
+        #spotlight-panel-bottom {
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Top set by JS */
+        }
+        
+        #spotlight-panel-left {
+            left: 0;
+            /* Top, bottom, width set by JS */
+        }
+        
+        #spotlight-panel-right {
+            right: 0;
+            /* Top, bottom, width set by JS */
+        }
+
+        #spotlight-tooltip {
+            position: fixed;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+            z-index: 10002;
+            pointer-events: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .tooltip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        #tooltip-step {
+            font-size: 11px;
+            color: var(--accent-primary);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tooltip-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tooltip-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8);
+        }
+
+        #tooltip-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        #tooltip-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .tooltip-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .tooltip-actions button {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tooltip-actions button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #btn-next {
+            background: var(--gradient-primary);
+            color: var(--text-on-accent);
+            border: none;
+        }
+
+        #btn-next:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.4);
+        }
+
+        #btn-prev {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        #btn-prev:hover:not(:disabled) {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Floating Help Button */
+        .floating-help-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: var(--text-on-accent);
+            border: none;
+            font-size: 24px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-help-button:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 12px 32px rgba(6, 182, 212, 0.6);
+        }
+
+        #help-menu {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 1000;
+            min-width: 200px;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        #help-menu.hidden {
+            display: none;
+        }
+
+        #help-menu button {
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            border-radius: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #help-menu button:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 640px) {
+            .tutorial-content {
+                padding: 32px 24px;
+            }
+
+            .tutorial-header h1 {
+                font-size: 24px;
+            }
+
+            .tutorial-actions {
+                flex-direction: column;
+            }
+
+            #spotlight-tooltip {
+                max-width: calc(100vw - 40px);
+                left: 20px !important;
+                right: 20px !important;
+                width: auto !important;
+            }
+
+            .floating-help-button {
+                bottom: 80px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            #help-menu {
+                bottom: 136px;
+                right: 20px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Welcome Tutorial Modal -->
+    <div id="welcome-modal" class="tutorial-modal hidden">
+        <div class="tutorial-content">
+            <div class="tutorial-header">
+                <h1>🗺️ Willkommen bei TripViz!</h1>
+                <p>Plane deine Japan-Reise mit interaktiver Karte</p>
+            </div>
+            
+            <div class="tutorial-features">
+                <div class="feature-item">
+                    <span class="feature-icon">🗺️</span>
+                    <span class="feature-text">Interaktive Karte mit Marker</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">📍</span>
+                    <span class="feature-text">Aktivitäten & Transport hinzufügen</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">💰</span>
+                    <span class="feature-text">Budget in JPY & EUR tracken</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🎨</span>
+                    <span class="feature-text">8 verschiedene Farbschemata</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">👥</span>
+                    <span class="feature-text">Zusammen planen & teilen</span>
+                </div>
+            </div>
+            
+            <div class="tutorial-actions">
+                <button onclick="startTour()" class="btn-tutorial-primary">
+                    🎓 Tour starten
+                </button>
+                <button onclick="skipWelcome()" class="btn-tutorial-secondary">
+                    Direkt loslegen
+                </button>
+            </div>
+            
+            <label class="tutorial-checkbox">
+                <input type="checkbox" id="dont-show-again">
+                <span>Nicht mehr anzeigen</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Spotlight Tour Overlay -->
+    <div id="spotlight-overlay" class="hidden">
+        <!-- Four panels create the darkened backdrop with a cutout -->
+        <div id="spotlight-panel-top" class="spotlight-panel"></div>
+        <div id="spotlight-panel-bottom" class="spotlight-panel"></div>
+        <div id="spotlight-panel-left" class="spotlight-panel"></div>
+        <div id="spotlight-panel-right" class="spotlight-panel"></div>
+        
+        <!-- Highlighted element border -->
+        <div id="spotlight-highlight"></div>
+        
+        <!-- Tooltip -->
+        <div id="spotlight-tooltip">
+            <div class="tooltip-header">
+                <span id="tooltip-step">Schritt 1 von 5</span>
+                <button class="tooltip-close" onclick="closeTour()">×</button>
+            </div>
+            <h3 id="tooltip-title">Titel</h3>
+            <p id="tooltip-text">Beschreibung</p>
+            <div class="tooltip-actions">
+                <button onclick="previousStep()" id="btn-prev">← Zurück</button>
+                <button onclick="nextStep()" id="btn-next">Weiter →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Help Button -->
+    <button id="help-button" class="floating-help-button" onclick="toggleHelpMenu()" title="Hilfe & Tipps">
+        ?
+    </button>
+
+    <!-- Help Menu -->
+    <div id="help-menu" class="hidden">
+        <button onclick="startTour(); toggleHelpMenu();">
+            <span>📖</span>
+            <span>Tour neu starten</span>
+        </button>
+        <button onclick="window.open('https://github.com/yourusername/tripviz', '_blank'); toggleHelpMenu();">
+            <span>📚</span>
+            <span>Dokumentation</span>
+        </button>
+        <button onclick="alert('Feedback-Formular hier!'); toggleHelpMenu();">
+            <span>📧</span>
+            <span>Feedback senden</span>
+        </button>
+    </div>
+
 
     <div id="map"></div>
 
@@ -3869,6 +4387,288 @@ function updateUI() { renderList(); updateFilter(); renderMap(); }
         
         window.toggleMoreMenu = toggleMoreMenu;
         window.closeMoreMenu = closeMoreMenu;
+
+        // ============================================
+        // TUTORIAL SYSTEM
+        // ============================================
+
+        // Tutorial Configuration
+        const TUTORIAL_STEPS = [
+            {
+                target: '#global-search',
+                title: '🔍 Ziele suchen',
+                text: 'Suche nach Orten wie "Shibuya", "Tokyo Tower" oder "Senso-ji". Klicke auf ein Ergebnis um es zur Karte hinzuzufügen.',
+                position: 'bottom'
+            },
+            {
+                target: '#map',
+                title: '🗺️ Interaktive Karte',
+                text: 'Klicke auf die Karte um eine neue Aktivität hinzuzufügen. Ziehe Marker um Positionen anzupassen.',
+                position: 'left'
+            },
+            {
+                target: '#sidebar',
+                title: '📋 Dein Reiseplan',
+                text: 'Hier siehst du alle deine Aktivitäten sortiert nach Datum. Klicke auf einen Eintrag um Details zu bearbeiten.',
+                position: 'left'
+            },
+            {
+                target: '#must-see-filter',
+                title: '🐭 Must-See Filter',
+                text: 'Markiere wichtige Orte als "Must-See" und filtere sie später mit einem Klick.',
+                position: 'bottom'
+            },
+            {
+                target: window.innerWidth > 1024 ? '.sidebar-actions-desktop' : '#more-menu-btn',
+                title: '✨ Mehr Features',
+                text: 'Hier findest du zusätzliche Funktionen: Zusammen planen, Teilen, Export/Import und Statistiken.',
+                position: 'top'
+            }
+        ];
+
+        let currentStep = 0;
+        let tourActive = false;
+
+        // Check if first visit
+        function checkFirstVisit() {
+            const hasVisited = localStorage.getItem('tripviz-visited');
+            const dontShowAgain = localStorage.getItem('tripviz-tutorial-skip');
+            
+            if (!hasVisited && !dontShowAgain) {
+                // Show welcome modal after 500ms delay
+                setTimeout(() => {
+                    showWelcomeModal();
+                }, 500);
+            }
+            
+            localStorage.setItem('tripviz-visited', 'true');
+        }
+
+        // Welcome Modal Functions
+        function showWelcomeModal() {
+            document.getElementById('welcome-modal').classList.remove('hidden');
+        }
+
+        function skipWelcome() {
+            const dontShow = document.getElementById('dont-show-again').checked;
+            if (dontShow) {
+                localStorage.setItem('tripviz-tutorial-skip', 'true');
+            }
+            document.getElementById('welcome-modal').classList.add('hidden');
+        }
+
+        // Start Tour
+        function startTour() {
+            skipWelcome();
+            tourActive = true;
+            currentStep = 0;
+            
+            // Open sidebar if closed
+            if (!state.uiState.sidebar) {
+                document.getElementById('toggle-sidebar-btn').click();
+            }
+            
+            document.getElementById('spotlight-overlay').classList.remove('hidden');
+            showStep(0);
+        }
+
+        // Show Tour Step
+        function showStep(stepIndex) {
+            if (stepIndex < 0 || stepIndex >= TUTORIAL_STEPS.length) return;
+            
+            currentStep = stepIndex;
+            const step = TUTORIAL_STEPS[stepIndex];
+            const target = document.querySelector(step.target);
+            
+            if (!target) {
+                console.error('Tutorial target not found:', step.target);
+                // Try next step
+                if (stepIndex < TUTORIAL_STEPS.length - 1) {
+                    setTimeout(() => showStep(stepIndex + 1), 100);
+                }
+                return;
+            }
+            
+            // Update tooltip content
+            document.getElementById('tooltip-step').textContent = `Schritt ${stepIndex + 1} von ${TUTORIAL_STEPS.length}`;
+            document.getElementById('tooltip-title').textContent = step.title;
+            document.getElementById('tooltip-text').textContent = step.text;
+            
+            // Update button states
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            
+            btnPrev.disabled = stepIndex === 0;
+            btnNext.textContent = stepIndex === TUTORIAL_STEPS.length - 1 ? 'Fertig ✓' : 'Weiter →';
+            
+            // Highlight target element
+            highlightElement(target);
+            
+            // Position tooltip
+            positionTooltip(target, step.position);
+        }
+
+        function highlightElement(element) {
+            const rect = element.getBoundingClientRect();
+            const highlight = document.getElementById('spotlight-highlight');
+            
+            const padding = 8;
+            
+            // Position the highlight border
+            const top = rect.top - padding;
+            const left = rect.left - padding;
+            const width = rect.width + padding * 2;
+            const height = rect.height + padding * 2;
+            
+            highlight.style.top = top + 'px';
+            highlight.style.left = left + 'px';
+            highlight.style.width = width + 'px';
+            highlight.style.height = height + 'px';
+            
+            // Position the 4 backdrop panels to create cutout
+            const panelTop = document.getElementById('spotlight-panel-top');
+            const panelBottom = document.getElementById('spotlight-panel-bottom');
+            const panelLeft = document.getElementById('spotlight-panel-left');
+            const panelRight = document.getElementById('spotlight-panel-right');
+            
+            // Top panel: from screen top to highlight top
+            panelTop.style.height = top + 'px';
+            
+            // Bottom panel: from highlight bottom to screen bottom
+            panelBottom.style.top = (top + height) + 'px';
+            
+            // Left panel: from highlight top to bottom, screen left to highlight left
+            panelLeft.style.top = top + 'px';
+            panelLeft.style.height = height + 'px';
+            panelLeft.style.width = left + 'px';
+            
+            // Right panel: from highlight top to bottom, highlight right to screen right
+            panelRight.style.top = top + 'px';
+            panelRight.style.height = height + 'px';
+            panelRight.style.left = (left + width) + 'px';
+        }
+
+        function positionTooltip(target, position) {
+            const tooltip = document.getElementById('spotlight-tooltip');
+            const rect = target.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            let top, left;
+            
+            switch (position) {
+                case 'bottom':
+                    top = rect.bottom + 20;
+                    left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                    break;
+                case 'top':
+                    top = rect.top - tooltipRect.height - 20;
+                    left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                    break;
+                case 'left':
+                    top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                    left = rect.left - tooltipRect.width - 20;
+                    break;
+                case 'right':
+                    top = rect.top + (rect.height / 2) - (tooltipRect.height / 2);
+                    left = rect.right + 20;
+                    break;
+                default:
+                    top = rect.bottom + 20;
+                    left = rect.left;
+            }
+            
+            // Keep tooltip on screen
+            const margin = 20;
+            top = Math.max(margin, Math.min(top, window.innerHeight - tooltipRect.height - margin));
+            left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
+            
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+        }
+
+        function nextStep() {
+            if (currentStep < TUTORIAL_STEPS.length - 1) {
+                showStep(currentStep + 1);
+            } else {
+                closeTour();
+                // Celebrate!
+                console.log('🎉 Tutorial completed!');
+                localStorage.setItem('tripviz-tutorial-completed', 'true');
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 0) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        function closeTour() {
+            tourActive = false;
+            document.getElementById('spotlight-overlay').classList.add('hidden');
+        }
+
+        // Help Menu Functions
+        function toggleHelpMenu() {
+            const menu = document.getElementById('help-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Close help menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const helpBtn = document.getElementById('help-button');
+            const helpMenu = document.getElementById('help-menu');
+            
+            if (helpMenu && !helpMenu.classList.contains('hidden')) {
+                if (!helpMenu.contains(e.target) && !helpBtn.contains(e.target)) {
+                    helpMenu.classList.add('hidden');
+                }
+            }
+        });
+
+        // Re-position elements on resize
+        window.addEventListener('resize', () => {
+            if (tourActive && currentStep >= 0) {
+                const step = TUTORIAL_STEPS[currentStep];
+                const target = document.querySelector(step.target);
+                if (target) {
+                    highlightElement(target);
+                    positionTooltip(target, step.position);
+                }
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!tourActive) return;
+            
+            if (e.key === 'Escape') {
+                closeTour();
+            } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                nextStep();
+            } else if (e.key === 'ArrowLeft') {
+                previousStep();
+            }
+        });
+
+        // Export functions
+        window.checkFirstVisit = checkFirstVisit;
+        window.showWelcomeModal = showWelcomeModal;
+        window.skipWelcome = skipWelcome;
+        window.startTour = startTour;
+        window.showStep = showStep;
+        window.nextStep = nextStep;
+        window.previousStep = previousStep;
+        window.closeTour = closeTour;
+        window.toggleHelpMenu = toggleHelpMenu;
+
+        // Initialize tutorial on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Small delay to ensure everything is loaded
+            setTimeout(() => {
+                checkFirstVisit();
+            }, 300);
+        });
 
     </script>
     
