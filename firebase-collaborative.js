@@ -341,11 +341,23 @@ async function joinCollaborativeTrip() {
 }
 
 function copyTripId() {
-    const input = document.getElementById('trip-id-display');
-    input.select();
-    document.execCommand('copy');
+    const tripId = document.getElementById('trip-id-display').textContent;
+    if (!tripId) return;
     
-    showNotification('📋 Trip-ID kopiert!', 'success');
+    navigator.clipboard.writeText(tripId).then(() => {
+        alert('📋 Trip-ID kopiert: ' + tripId);
+    }).catch(() => {
+        // Fallback
+        const temp = document.createElement('textarea');
+        temp.value = tripId;
+        temp.style.position = 'fixed';
+        temp.style.opacity = '0';
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+        alert('📋 Trip-ID kopiert: ' + tripId);
+    });
 }
 
 function showNotification(message, type = 'info') {
