@@ -341,23 +341,61 @@ async function joinCollaborativeTrip() {
 }
 
 function copyTripId() {
-    const tripId = document.getElementById('trip-id-display').textContent;
-    if (!tripId) return;
+    const element = document.getElementById('trip-id-display');
+    if (!element) {
+        alert('❌ Trip-ID nicht gefunden');
+        return;
+    }
     
-    navigator.clipboard.writeText(tripId).then(() => {
-        alert('📋 Trip-ID kopiert: ' + tripId);
-    }).catch(() => {
-        // Fallback
-        const temp = document.createElement('textarea');
-        temp.value = tripId;
-        temp.style.position = 'fixed';
-        temp.style.opacity = '0';
-        document.body.appendChild(temp);
-        temp.select();
-        document.execCommand('copy');
-        document.body.removeChild(temp);
-        alert('📋 Trip-ID kopiert: ' + tripId);
-    });
+    const tripId = element.textContent || element.innerText;
+    
+    if (!tripId || tripId.trim() === '') {
+        alert('❌ Keine Trip-ID vorhanden');
+        return;
+    }
+    
+    // Moderne Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(tripId)
+            .then(() => {
+                alert('📋 Trip-ID kopiert: ' + tripId);
+            })
+            .catch(err => {
+                console.error('Clipboard API failed:', err);
+                fallbackCopyToClipboard(tripId);
+            });
+    } else {
+        // Fallback für ältere Browser
+        fallbackCopyToClipboard(tripId);
+    }
+}
+
+// Fallback-Methode
+function fallbackCopyToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    
+    textArea.select();
+    textArea.setSelectionRange(0, 99999); // Für mobile Geräte
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            alert('📋 Trip-ID kopiert: ' + text);
+        } else {
+            alert('❌ Kopieren fehlgeschlagen. Bitte manuell kopieren: ' + text);
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        alert('❌ Kopieren fehlgeschlagen. Trip-ID: ' + text);
+    }
+    
+    document.body.removeChild(textArea);
 }
 
 function showNotification(message, type = 'info') {
