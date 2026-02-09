@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-[🌐 Live Demo](https://tripviz.wiredu.cloud) | [📖 Dokumentation](#features) | [🐛 Bug Report](https://github.com/yourusername/tripviz/issues)
+[🌐 Live Demo](https://tripviz.wiredu.cloud) | [📖 Dokumentation](#features) | [🐛 Bug Report](https://github.com/yzed93/tripviz/issues)
 
 ---
 
@@ -160,7 +160,7 @@
 
 1. **Dateien herunterladen:**
 ```bash
-git clone https://github.com/yourusername/tripviz.git
+git clone https://github.com/yzed93/tripviz.git
 cd tripviz
 ```
 
@@ -542,7 +542,7 @@ Wir freuen uns über Beiträge! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für De
 
 1. **Fork & Clone:**
 ```bash
-git clone https://github.com/yourusername/tripviz.git
+git clone https://github.com/yzed93/tripviz.git
 cd tripviz
 ```
 
@@ -577,7 +577,7 @@ git push origin feature/amazing-feature
 
 ## 🐛 Bug Reports
 
-Finde einen Bug? [Erstelle ein Issue](https://github.com/yourusername/tripviz/issues/new)
+Finde einen Bug? [Erstelle ein Issue](https://github.com/yzed93/tripviz/issues/new)
 
 **Bitte inkludiere:**
 - Browser & Version
