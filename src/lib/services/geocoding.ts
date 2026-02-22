@@ -1,12 +1,12 @@
 /**
- * Nominatim geocoding service — ported from original
+ * Nominatim geocoding service
  * Rate-limited: 1 request per second (Nominatim ToS)
+ * Note: User-Agent cannot be set in browser fetch (forbidden header) — omitted intentionally.
  */
 
 import type { GeocodingResult } from '$lib/types';
 
 const BASE_URL = 'https://nominatim.openstreetmap.org';
-const USER_AGENT = 'TripViz/2.0 (https://tripviz.wiredu.cloud)';
 
 let lastRequestTime = 0;
 
@@ -17,17 +17,15 @@ async function rateLimitedFetch(url: string): Promise<Response> {
 		await new Promise((r) => setTimeout(r, 1000 - elapsed));
 	}
 	lastRequestTime = Date.now();
-	return fetch(url, { headers: { 'User-Agent': USER_AGENT } });
+	// No custom User-Agent — forbidden header in browser Fetch API
+	return fetch(url);
 }
 
 /**
  * Search for locations by query string.
- * Returns up to `limit` results (default 5).
+ * Searches globally but biases toward Japan results.
  */
-export async function searchLocations(
-	query: string,
-	limit = 5
-): Promise<GeocodingResult[]> {
+export async function searchLocations(query: string, limit = 5): Promise<GeocodingResult[]> {
 	if (!query.trim()) return [];
 
 	const params = new URLSearchParams({
@@ -35,16 +33,14 @@ export async function searchLocations(
 		format: 'json',
 		limit: String(limit),
 		addressdetails: '1',
-		// Bias toward Japan
-		countrycodes: 'jp',
 		'accept-language': 'de,en'
+		// countrycodes removed: restricting to 'jp' caused too many misses for English queries
 	});
 
 	try {
 		const res = await rateLimitedFetch(`${BASE_URL}/search?${params}`);
-		if (!res.ok) throw new Error(`Nominatim error ${res.status}`);
-		const data = (await res.json()) as GeocodingResult[];
-		return data;
+		if (!res.ok) throw new Error(`Nominatim ${res.status}`);
+		return (await res.json()) as GeocodingResult[];
 	} catch (err) {
 		console.error('Geocoding error:', err);
 		return [];
@@ -66,7 +62,6 @@ export async function reverseGeocode(lat: number, lng: number): Promise<string> 
 		const res = await rateLimitedFetch(`${BASE_URL}/reverse?${params}`);
 		if (!res.ok) return '';
 		const data = (await res.json()) as { display_name?: string };
-		// Return only the first part (place name) to keep it short
 		return data.display_name?.split(',')[0] ?? '';
 	} catch {
 		return '';

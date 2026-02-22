@@ -73,6 +73,9 @@ body {
 	flex: 1;
 	position: relative;
 	z-index: 1;
+	/* Explicit min-height so Leaflet can calculate its container size */
+	min-height: 0;
+	height: 100%;
 }
 
 .leaflet-container {

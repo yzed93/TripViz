@@ -3,15 +3,19 @@
 	import { filteredPoints } from '$lib/stores/filter';
 	import { points } from '$lib/stores/points';
 	import { openAddModal, openEditModal } from '$lib/stores/ui';
-	import { addPoint, updatePoint, deletePoint } from '$lib/services/db';
+	import { updatePoint, deletePoint } from '$lib/services/db';
 	import type { Point } from '$lib/types';
 	import { CATEGORIES } from '$lib/types';
 
 	let mapEl: HTMLDivElement;
-	let L: typeof import('leaflet');
-	let map: import('leaflet').Map;
-	let markerLayer: import('leaflet').LayerGroup;
-	let routeLayer: import('leaflet').LayerGroup;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let L: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let map: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let markerLayer: any;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let routeLayer: any;
 
 	// ─── Marker icon factory ─────────────────────────────────────────────────
 
@@ -19,7 +23,7 @@
 		return CATEGORIES.find((c) => c.id === category)?.emoji ?? '📍';
 	}
 
-	function createMarkerIcon(point: Point): import('leaflet').DivIcon {
+	function createMarkerIcon(point: Point) {
 		const emoji = point.type === 'transport' ? '🚀' : getCategoryEmoji(point.category);
 		const mustSeeBorder = point.mustSee ? 'border: 2px solid var(--must-see);' : '';
 		return L.divIcon({
@@ -49,9 +53,10 @@
 
 	function createPopupContent(point: Point): string {
 		const emoji = point.type === 'transport' ? '🚀' : getCategoryEmoji(point.category);
-		const budget = point.budgetJPY > 0
-			? `<div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem;">¥${point.budgetJPY.toLocaleString()}</div>`
-			: '';
+		const budget =
+			point.budgetJPY > 0
+				? `<div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem;">¥${point.budgetJPY.toLocaleString()}</div>`
+				: '';
 		const mustSee = point.mustSee
 			? `<span style="font-size: 0.7rem; background: var(--must-see); color: white; padding: 0.1rem 0.4rem; border-radius: 999px; margin-left: 0.25rem;">★ Must-See</span>`
 			: '';
@@ -82,7 +87,7 @@
 	// ─── Render markers & routes ─────────────────────────────────────────────
 
 	function renderMap(pts: Point[]) {
-		if (!map) return;
+		if (!map || !markerLayer) return;
 
 		markerLayer.clearLayers();
 		routeLayer.clearLayers();
@@ -90,22 +95,21 @@
 		const activities = pts.filter((p) => p.type === 'activity');
 		const transports = pts.filter((p) => p.type === 'transport');
 
-		// Draw activity markers
 		for (const point of activities) {
 			const marker = L.marker([point.coords.lat, point.coords.lng], {
 				icon: createMarkerIcon(point),
 				draggable: true
 			});
 
-			marker.bindPopup(createPopupContent(point), {
-				maxWidth: 280,
-				className: 'tripviz-popup'
-			});
+			marker.bindPopup(createPopupContent(point), { maxWidth: 280 });
 
-			// Drag to reposition
 			marker.on('dragend', async () => {
 				const latlng = marker.getLatLng();
-				const updated: Point = { ...point, coords: { lat: latlng.lat, lng: latlng.lng }, updated_at: Date.now() };
+				const updated: Point = {
+					...point,
+					coords: { lat: latlng.lat, lng: latlng.lng },
+					updated_at: Date.now()
+				};
 				await updatePoint(updated);
 				points.update((all) => all.map((p) => (p.id === point.id ? updated : p)));
 			});
@@ -113,11 +117,8 @@
 			markerLayer.addLayer(marker);
 		}
 
-		// Draw animated transport routes via AntPath
 		for (const t of transports) {
 			if (!t.coords) continue;
-			// Find nearby activities to connect
-			// For now, draw a simple line indicator at transport coords
 			const icon = L.divIcon({
 				html: `<div style="font-size: 1.25rem; background: var(--bg-card); border-radius: 0.375rem; padding: 0.125rem 0.375rem; border: 1px solid var(--border); cursor: pointer;">${t.transportMethod?.split(' ')[0] ?? '🚀'}</div>`,
 				className: '',
@@ -130,7 +131,7 @@
 		}
 	}
 
-	// ─── Handle point delete from popup ──────────────────────────────────────
+	// ─── Delete from popup ────────────────────────────────────────────────────
 
 	async function handleDeletePoint(pointId: string) {
 		if (!confirm('Diesen Punkt wirklich löschen?')) return;
@@ -144,12 +145,24 @@
 	let unsubscribe: () => void;
 
 	onMount(async () => {
-		// Dynamic import — Leaflet is browser-only
-		L = (await import('leaflet')).default;
-		await import('leaflet/dist/leaflet.css');
+		// 1. Load Leaflet CSS by injecting a <link> tag — works reliably in all Vite setups
+		if (!document.querySelector('link[data-leaflet]')) {
+			const link = document.createElement('link');
+			link.rel = 'stylesheet';
+			link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+			link.setAttribute('data-leaflet', '');
+			document.head.appendChild(link);
+			// Wait for CSS to load before initialising map
+			await new Promise<void>((resolve) => { link.onload = () => resolve(); });
+		}
 
+		// 2. Import Leaflet module
+		const leafletModule = await import('leaflet');
+		L = leafletModule.default ?? leafletModule;
+
+		// 3. Initialise map
 		map = L.map(mapEl, {
-			center: [36.2048, 138.2529], // Japan center
+			center: [36.2048, 138.2529],
 			zoom: 6,
 			zoomControl: true
 		});
@@ -162,21 +175,21 @@
 		markerLayer = L.layerGroup().addTo(map);
 		routeLayer = L.layerGroup().addTo(map);
 
-		// Click on map to add point
-		map.on('click', (e) => {
+		// 4. Click on empty map to add a point
+		map.on('click', (e: { latlng: { lat: number; lng: number } }) => {
 			openAddModal({ lat: e.latlng.lat, lng: e.latlng.lng });
 		});
 
-		// Expose handlers to popups (which use inline onclick)
-		(window as Window & { __tripviz_editPoint: (id: string) => void; __tripviz_deletePoint: (id: string) => void }).__tripviz_editPoint = (id: string) => {
+		// 5. Expose popup handlers globally (used in inline onclick strings)
+		(window as unknown as Record<string, unknown>)['__tripviz_editPoint'] = (id: string) => {
 			map.closePopup();
 			openEditModal(id);
 		};
-		(window as Window & { __tripviz_editPoint: (id: string) => void; __tripviz_deletePoint: (id: string) => void }).__tripviz_deletePoint = (id: string) => {
+		(window as unknown as Record<string, unknown>)['__tripviz_deletePoint'] = (id: string) => {
 			handleDeletePoint(id);
 		};
 
-		// React to filtered points
+		// 6. Subscribe to filtered points — re-renders markers on change
 		unsubscribe = filteredPoints.subscribe(renderMap);
 	});
 
@@ -186,4 +199,4 @@
 	});
 </script>
 
-<div bind:this={mapEl} class="w-full h-full" style="z-index: 1;" />
+<div bind:this={mapEl} class="w-full h-full" />
