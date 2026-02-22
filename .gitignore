@@ -1,0 +1,24 @@
+# SvelteKit build output
+.svelte-kit/
+build/
+dist/
+
+# Node.js
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
