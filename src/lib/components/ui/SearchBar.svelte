@@ -22,8 +22,9 @@
 	}
 
 	function selectResult(result: GeocodingResult) {
-		openAddModal({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) });
-		query = result.display_name.split(',')[0];
+		const placeName = result.display_name.split(',')[0].trim();
+		openAddModal({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) }, placeName);
+		query = placeName;
 		showResults = false;
 		results = [];
 	}

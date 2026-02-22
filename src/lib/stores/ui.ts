@@ -8,6 +8,7 @@ export const ui = writable<UIState>({
 	activeModal: null,
 	editingPointId: null,
 	addingPointCoords: null,
+	addingPointTitle: '',
 	activeView: 'map'
 });
 
@@ -27,15 +28,28 @@ export function openModal(modal: ModalType) {
 }
 
 export function closeModal() {
-	ui.update((s) => ({ ...s, activeModal: null, editingPointId: null, addingPointCoords: null }));
+	ui.update((s) => ({
+		...s,
+		activeModal: null,
+		editingPointId: null,
+		addingPointCoords: null,
+		addingPointTitle: ''
+	}));
 }
 
 export function openEditModal(pointId: string) {
-	ui.update((s) => ({ ...s, activeModal: 'addEdit', editingPointId: pointId }));
+	ui.update((s) => ({ ...s, activeModal: 'addEdit', editingPointId: pointId, addingPointTitle: '' }));
 }
 
-export function openAddModal(coords: Coords) {
-	ui.update((s) => ({ ...s, activeModal: 'addEdit', addingPointCoords: coords, editingPointId: null }));
+/** Opens the add-form and optionally pre-fills the title (e.g. from search result). */
+export function openAddModal(coords: Coords, title = '') {
+	ui.update((s) => ({
+		...s,
+		activeModal: 'addEdit',
+		addingPointCoords: coords,
+		addingPointTitle: title,
+		editingPointId: null
+	}));
 }
 
 export function toggleSidebar() {

@@ -145,22 +145,11 @@
 	let unsubscribe: () => void;
 
 	onMount(async () => {
-		// 1. Load Leaflet CSS by injecting a <link> tag — works reliably in all Vite setups
-		if (!document.querySelector('link[data-leaflet]')) {
-			const link = document.createElement('link');
-			link.rel = 'stylesheet';
-			link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-			link.setAttribute('data-leaflet', '');
-			document.head.appendChild(link);
-			// Wait for CSS to load before initialising map
-			await new Promise<void>((resolve) => { link.onload = () => resolve(); });
-		}
-
-		// 2. Import Leaflet module
+		// 1. Import Leaflet — CSS is loaded via app.css (@import 'leaflet/dist/leaflet.css')
 		const leafletModule = await import('leaflet');
 		L = leafletModule.default ?? leafletModule;
 
-		// 3. Initialise map
+		// 2. Initialise map
 		map = L.map(mapEl, {
 			center: [36.2048, 138.2529],
 			zoom: 6,
@@ -171,6 +160,9 @@
 			attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 			maxZoom: 19
 		}).addTo(map);
+
+		// 3. After flex-layout settles, force Leaflet to recalculate container dimensions
+		setTimeout(() => map?.invalidateSize(), 50);
 
 		markerLayer = L.layerGroup().addTo(map);
 		routeLayer = L.layerGroup().addTo(map);

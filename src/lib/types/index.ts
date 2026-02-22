@@ -109,6 +109,7 @@ export interface UIState {
 	activeModal: ModalType | null;
 	editingPointId: string | null;
 	addingPointCoords: Coords | null;
+	addingPointTitle: string;
 	activeView: ViewType;
 }
 

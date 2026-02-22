@@ -40,6 +40,7 @@
 
 	onMount(async () => {
 		if (existingPoint) {
+			// Edit mode: load existing point data
 			type = existingPoint.type;
 			title = existingPoint.title;
 			category = existingPoint.category;
@@ -53,6 +54,9 @@
 			transportEnd = existingPoint.transportEnd ?? '';
 			transportMethod = existingPoint.transportMethod ?? '🚃 Train';
 			images = await getImages(existingPoint.id);
+		} else if ($ui.addingPointTitle) {
+			// New point via search: pre-fill title from search result
+			title = $ui.addingPointTitle;
 		}
 	});
 
