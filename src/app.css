@@ -372,6 +372,26 @@ select.form-input {
 	margin: 0 !important;
 }
 
+/* ─── Marker Hover Tooltip ─────────────────────────────────────────────────── */
+.tripviz-tip-wrap {
+	background: var(--bg-card) !important;
+	border: 1px solid var(--border) !important;
+	border-radius: var(--radius) !important;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+	padding: 0 !important;
+	overflow: hidden;
+	min-width: 160px;
+	max-width: 200px;
+}
+
+.tripviz-tip-wrap::before {
+	border-top-color: var(--border) !important;
+}
+
+.tripviz-tip {
+	display: block;
+}
+
 /* ─── Leaflet Controls ─────────────────────────────────────────────────────── */
 .leaflet-control-zoom a {
 	background: var(--bg-card) !important;

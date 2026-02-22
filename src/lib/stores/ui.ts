@@ -41,8 +41,8 @@ export function openEditModal(pointId: string) {
 	ui.update((s) => ({ ...s, activeModal: 'addEdit', editingPointId: pointId, addingPointTitle: '' }));
 }
 
-/** Opens the add-form and optionally pre-fills the title (e.g. from search result). */
-export function openAddModal(coords: Coords, title = '') {
+/** Opens the add-form and optionally pre-fills coords and title. */
+export function openAddModal(coords: Coords | null = null, title = '') {
 	ui.update((s) => ({
 		...s,
 		activeModal: 'addEdit',

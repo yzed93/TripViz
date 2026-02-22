@@ -61,6 +61,8 @@ export interface Point {
 	transportStart?: string;
 	transportEnd?: string;
 	transportMethod?: TransportMethod;
+	startCoords?: Coords;
+	endCoords?: Coords;
 	// Metadata
 	created_at: number;
 	updated_at: number;

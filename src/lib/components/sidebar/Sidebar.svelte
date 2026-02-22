@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ui, openModal } from '$lib/stores/ui';
+	import { ui, openModal, openAddModal } from '$lib/stores/ui';
 	import { filter, setDayFilter, toggleMustSee } from '$lib/stores/filter';
 	import { filteredPoints } from '$lib/stores/filter';
 	import { tripStats, tripDays } from '$lib/stores/points';
@@ -77,6 +77,13 @@
 			title="Must-See Filter"
 		>
 			★ Must-See
+		</button>
+	</div>
+
+	<!-- Add Stop -->
+	<div class="px-3 pt-2 pb-1 flex-shrink-0 flex justify-center">
+		<button class="btn btn-primary justify-center" style="min-width: 200px;" onclick={() => openAddModal()}>
+			+ Stop hinzufügen
 		</button>
 	</div>
 

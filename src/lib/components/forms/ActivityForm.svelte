@@ -5,7 +5,8 @@
 	import { addPointToFirebase, updatePointInFirebase, deletePointFromFirebase } from '$lib/services/firebase';
 	import { collab } from '$lib/stores/ui';
 	import { CATEGORIES, TRANSPORT_METHODS } from '$lib/types';
-	import type { Point, ActivityCategory, TransportMethod, PointImage } from '$lib/types';
+	import type { Point, ActivityCategory, TransportMethod, PointImage, GeocodingResult, Coords } from '$lib/types';
+	import { searchLocations } from '$lib/services/geocoding';
 	import { onMount } from 'svelte';
 
 	// ─── Helpers ─────────────────────────────────────────────────────────────
@@ -33,8 +34,53 @@
 	let transportStart = $state('');
 	let transportEnd = $state('');
 	let transportMethod = $state<TransportMethod>('🚃 Train');
+	let startCoords = $state<Coords | null>(null);
+	let endCoords = $state<Coords | null>(null);
 	let images = $state<PointImage[]>([]);
 	let newImageFiles = $state<File[]>([]);
+
+	// ─── Transport Geocoding State ────────────────────────────────────────────
+
+	let startResults = $state<GeocodingResult[]>([]);
+	let endResults = $state<GeocodingResult[]>([]);
+	let startLoading = $state(false);
+	let endLoading = $state(false);
+	let startTimer: ReturnType<typeof setTimeout>;
+	let endTimer: ReturnType<typeof setTimeout>;
+
+	function onStartInput() {
+		clearTimeout(startTimer);
+		startCoords = null;
+		if (!transportStart.trim()) { startResults = []; return; }
+		startTimer = setTimeout(async () => {
+			startLoading = true;
+			startResults = await searchLocations(transportStart, 4);
+			startLoading = false;
+		}, 400);
+	}
+
+	function selectStart(r: GeocodingResult) {
+		transportStart = r.display_name.split(',')[0];
+		startCoords = { lat: parseFloat(r.lat), lng: parseFloat(r.lon) };
+		startResults = [];
+	}
+
+	function onEndInput() {
+		clearTimeout(endTimer);
+		endCoords = null;
+		if (!transportEnd.trim()) { endResults = []; return; }
+		endTimer = setTimeout(async () => {
+			endLoading = true;
+			endResults = await searchLocations(transportEnd, 4);
+			endLoading = false;
+		}, 400);
+	}
+
+	function selectEnd(r: GeocodingResult) {
+		transportEnd = r.display_name.split(',')[0];
+		endCoords = { lat: parseFloat(r.lat), lng: parseFloat(r.lon) };
+		endResults = [];
+	}
 
 	// ─── Init from existing point ─────────────────────────────────────────────
 
@@ -53,6 +99,8 @@
 			transportStart = existingPoint.transportStart ?? '';
 			transportEnd = existingPoint.transportEnd ?? '';
 			transportMethod = existingPoint.transportMethod ?? '🚃 Train';
+			startCoords = existingPoint.startCoords ?? null;
+			endCoords = existingPoint.endCoords ?? null;
 			images = await getImages(existingPoint.id);
 		} else if ($ui.addingPointTitle) {
 			// New point via search: pre-fill title from search result
@@ -65,7 +113,11 @@
 	async function save() {
 		if (!title.trim()) return;
 
-		const coords = existingPoint?.coords ?? $ui.addingPointCoords ?? { lat: 35.6762, lng: 139.6503 };
+		// Spread to plain objects — Svelte 5 $state proxies can't be cloned by IndexedDB
+		const plainStartCoords = startCoords ? { lat: startCoords.lat, lng: startCoords.lng } : null;
+		const plainEndCoords = endCoords ? { lat: endCoords.lat, lng: endCoords.lng } : null;
+		const rawCoords = plainStartCoords ?? existingPoint?.coords ?? $ui.addingPointCoords ?? { lat: 35.6762, lng: 139.6503 };
+		const coords = { lat: rawCoords.lat, lng: rawCoords.lng };
 		const now = Date.now();
 
 		const point: Point = {
@@ -84,6 +136,8 @@
 			transportStart: type === 'transport' ? transportStart : undefined,
 			transportEnd: type === 'transport' ? transportEnd : undefined,
 			transportMethod: type === 'transport' ? transportMethod : undefined,
+			startCoords: type === 'transport' ? (plainStartCoords ?? undefined) : undefined,
+			endCoords: type === 'transport' ? (plainEndCoords ?? undefined) : undefined,
 			created_at: existingPoint?.created_at ?? now,
 			updated_at: now
 		};
@@ -184,17 +238,86 @@
 					</select>
 				</div>
 			{:else}
-				<!-- Transport fields -->
+				<!-- Transport: Von/Nach Suchfelder -->
 				<div class="flex gap-3">
-					<div style="flex: 1;">
+					<!-- Von -->
+					<div style="flex: 1; position: relative;">
 						<label class="form-label" for="transport-start">Von</label>
-						<input id="transport-start" type="text" class="form-input" placeholder="z.B. Tokyo" bind:value={transportStart} />
+						<input
+							id="transport-start"
+							type="text"
+							class="form-input"
+							placeholder="z.B. Tokyo"
+							autocomplete="off"
+							bind:value={transportStart}
+							oninput={onStartInput}
+						/>
+						{#if startLoading}
+							<div class="text-xs px-1 pt-1" style="color: var(--text-muted);">Suche…</div>
+						{/if}
+						{#if startResults.length > 0}
+							<div
+								style="position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+									background: var(--bg-card); border: 1px solid var(--border);
+									border-radius: 0.5rem; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4);"
+							>
+								{#each startResults as r}
+									<button
+										type="button"
+										onclick={() => selectStart(r)}
+										style="width: 100%; text-align: left; padding: 0.5rem 0.75rem;
+											font-size: 0.75rem; color: var(--text-main);
+											border-bottom: 1px solid var(--border); background: transparent; cursor: pointer;"
+										onmouseenter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)')}
+										onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+									>
+										{r.display_name.split(',').slice(0, 3).join(', ')}
+									</button>
+								{/each}
+							</div>
+						{/if}
 					</div>
-					<div style="flex: 1;">
+
+					<!-- Nach -->
+					<div style="flex: 1; position: relative;">
 						<label class="form-label" for="transport-end">Nach</label>
-						<input id="transport-end" type="text" class="form-input" placeholder="z.B. Kyoto" bind:value={transportEnd} />
+						<input
+							id="transport-end"
+							type="text"
+							class="form-input"
+							placeholder="z.B. Kyoto"
+							autocomplete="off"
+							bind:value={transportEnd}
+							oninput={onEndInput}
+						/>
+						{#if endLoading}
+							<div class="text-xs px-1 pt-1" style="color: var(--text-muted);">Suche…</div>
+						{/if}
+						{#if endResults.length > 0}
+							<div
+								style="position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+									background: var(--bg-card); border: 1px solid var(--border);
+									border-radius: 0.5rem; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.4);"
+							>
+								{#each endResults as r}
+									<button
+										type="button"
+										onclick={() => selectEnd(r)}
+										style="width: 100%; text-align: left; padding: 0.5rem 0.75rem;
+											font-size: 0.75rem; color: var(--text-main);
+											border-bottom: 1px solid var(--border); background: transparent; cursor: pointer;"
+										onmouseenter={(e) => ((e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)')}
+										onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+									>
+										{r.display_name.split(',').slice(0, 3).join(', ')}
+									</button>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				</div>
+
+				<!-- Verkehrsmittel -->
 				<div>
 					<label class="form-label" for="transport-method">Verkehrsmittel</label>
 					<select id="transport-method" class="form-input" bind:value={transportMethod}>
